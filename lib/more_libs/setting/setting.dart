@@ -1,13 +1,13 @@
-import 'package:thancoder_pre_app/more_libs/setting/app_config.dart';
-import 'package:thancoder_pre_app/more_libs/setting/app_setting_screen.dart';
-import 'package:thancoder_pre_app/more_libs/setting/core/app_cache_manager.dart';
-import 'package:thancoder_pre_app/more_libs/setting/core/app_current_version.dart';
-import 'package:thancoder_pre_app/more_libs/setting/core/app_setting_list_tile.dart';
-import 'package:thancoder_pre_app/more_libs/setting/core/path_util.dart';
-import 'package:thancoder_pre_app/more_libs/setting/core/thancoder_about_widget.dart';
+import 'package:apyar_app/more_libs/setting/app_config.dart';
+import 'package:apyar_app/more_libs/setting/app_setting_screen.dart';
+import 'package:apyar_app/more_libs/setting/core/app_cache_manager.dart';
+import 'package:apyar_app/more_libs/setting/core/app_current_version.dart';
+import 'package:apyar_app/more_libs/setting/core/app_setting_list_tile.dart';
+import 'package:apyar_app/more_libs/setting/core/path_util.dart';
+import 'package:apyar_app/more_libs/setting/core/thancoder_about_widget.dart';
 import 'package:flutter/material.dart';
 import 'package:than_pkg/than_pkg.dart';
-import 'package:thancoder_pre_app/more_libs/setting/core/theme_modes_chooser.dart';
+import 'package:apyar_app/more_libs/setting/core/theme_modes_chooser.dart';
 
 typedef OnSettingSavedCallback =
     void Function(BuildContext context, String message);

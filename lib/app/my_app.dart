@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:thancoder_pre_app/app/ui/home/home_screen.dart';
-import 'package:thancoder_pre_app/more_libs/setting/core/theme_switcher.dart';
+import 'package:apyar_app/app/ui/home/home_screen.dart';
+import 'package:apyar_app/more_libs/setting/core/theme_switcher.dart';
 
 class MyApp extends StatelessWidget {
   const MyApp({super.key});

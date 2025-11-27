@@ -47,3 +47,4 @@ app.*.map.json
 
 .thancoder_pre_app/
 .vscode
+.apyar_app

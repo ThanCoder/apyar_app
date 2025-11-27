@@ -1,7 +1,7 @@
-name: thancoder_pre_app
+name: apyar_app
 description: "Flutter Pre Build App"
 publish_to: "none" # Remove this line if you wish to publish to pub.dev
-repository: https://github.com/ThanCoder/thancoder_pre_app
+repository: https://github.com/ThanCoder/apyar_app
 
 version: 1.0.0+1
 
@@ -14,6 +14,9 @@ dependencies:
   than_pkg: ^5.0.0
   t_widgets: ^1.8.5
   flutter_markdown: ^0.7.7+1
+  # t_db: ^1.0.0
+  t_db:
+    path: /home/than/projects/plugins/t_db/
 
 dev_dependencies:
   flutter_test:
@@ -38,7 +41,6 @@ flutter:
     - CHANGELOG.md
     - README.md
     - pubspec.yaml
-
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/to/resolution-aware-images

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:t_widgets/t_widgets.dart';
-import 'package:thancoder_pre_app/more_libs/setting/setting.dart';
+import 'package:apyar_app/more_libs/setting/setting.dart';
 
 class MoreApp extends StatelessWidget {
   const MoreApp({super.key});

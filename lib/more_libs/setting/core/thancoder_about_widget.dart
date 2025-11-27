@@ -1,5 +1,5 @@
-import 'package:thancoder_pre_app/more_libs/setting/core/markdown_reader.dart';
-import 'package:thancoder_pre_app/more_libs/setting/setting.dart';
+import 'package:apyar_app/more_libs/setting/core/markdown_reader.dart';
+import 'package:apyar_app/more_libs/setting/setting.dart';
 import 'package:flutter/material.dart';
 import 'package:than_pkg/than_pkg.dart';
 
