@@ -10,7 +10,7 @@ class PathUtil {
     final name = rootPath.getName();
     final cacheFile = File(PathUtil.getCachePath(name: name));
     if (!cacheFile.existsSync()) {
-      cacheFile.writeAsBytesSync(
+      await cacheFile.writeAsBytes(
         bytes.buffer.asInt8List(bytes.offsetInBytes, bytes.lengthInBytes),
       );
     }
