@@ -2,8 +2,10 @@ import 'package:apyar_app/app/core/db_util.dart';
 import 'package:apyar_app/app/core/models/apyar.dart';
 import 'package:apyar_app/app/core/models/apyar_content.dart';
 import 'package:apyar_app/app/core/models/bookmark.dart';
+import 'package:apyar_app/app/core/providers/apyar_provider.dart';
 import 'package:apyar_app/more_libs/setting/core/path_util.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:t_db/t_db.dart';
 import 'package:t_widgets/t_widgets.dart';
 import 'package:t_widgets/theme/t_theme_services.dart';
@@ -59,5 +61,10 @@ void main() async {
   db.setAdapter<ApyarContent>(ApyarContentAdapter());
   db.setAdapter<Bookmark>(BookmarkAdapter());
 
-  runApp(const MyApp());
+  runApp(
+    MultiProvider(
+      providers: [ChangeNotifierProvider(create: (context) => ApyarProvider())],
+      child: const MyApp(),
+    ),
+  );
 }

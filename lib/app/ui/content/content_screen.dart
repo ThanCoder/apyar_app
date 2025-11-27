@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:t_db/t_db.dart';
 import 'package:t_widgets/functions/message_func.dart';
 import 'package:t_widgets/widgets/index.dart';
+import 'package:than_pkg/than_pkg.dart';
 
 final _box = TDB.getInstance().getBox<ApyarContent>();
 
@@ -23,7 +24,14 @@ class _ContentScreenState extends State<ContentScreen> {
     init();
   }
 
+  @override
+  void dispose() {
+    ThanPkg.platform.toggleFullScreen(isFullScreen: false);
+    super.dispose();
+  }
+
   bool isLoading = false;
+  bool isFullscreen = false;
   ApyarContent? content;
   List<String> textList = [];
 
@@ -57,11 +65,17 @@ class _ContentScreenState extends State<ContentScreen> {
     return Scaffold(
       body: isLoading
           ? Center(child: TLoader.random())
-          : CustomScrollView(slivers: [_getAppbar(), _getContent()]),
+          : GestureDetector(
+              onDoubleTap: _toggleFullscreen,
+              child: CustomScrollView(slivers: [_getAppbar(), _getContent()]),
+            ),
     );
   }
 
   Widget _getAppbar() {
+    if (isFullscreen) {
+      return SliverToBoxAdapter();
+    }
     return SliverAppBar(
       title: Text(widget.apyar.title),
       snap: true,
@@ -73,15 +87,11 @@ class _ContentScreenState extends State<ContentScreen> {
 
   Widget _getContent() {
     if (content == null) {
-      return SliverFillRemaining(child: Text('Content မရှိပါ!...'));
+      return SliverFillRemaining(
+        child: Center(child: Text('Content မရှိပါ!...')),
+      );
     }
     return _getTextList();
-    // return SliverToBoxAdapter(
-    //   child: Padding(
-    //     padding: const EdgeInsets.all(8.0),
-    //     child: Text(content!.body, style: TextStyle(fontSize: 18)),
-    //   ),
-    // );
   }
 
   Widget _getTextList() {
@@ -95,5 +105,11 @@ class _ContentScreenState extends State<ContentScreen> {
         );
       },
     );
+  }
+
+  void _toggleFullscreen() {
+    isFullscreen = !isFullscreen;
+    ThanPkg.platform.toggleFullScreen(isFullScreen: isFullscreen);
+    setState(() {});
   }
 }

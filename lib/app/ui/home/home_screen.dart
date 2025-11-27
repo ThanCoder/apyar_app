@@ -11,12 +11,18 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  final list = [HomePage(), BookmarkPage(), MoreApp()];
   int index = 0;
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: list[index],
+      body: IndexedStack(
+        index: index,
+        children: [
+          HomePage(),
+          BookmarkPage(key: ValueKey(index == 1)),
+          MoreApp(key: ValueKey(index == 1)),
+        ],
+      ),
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: index,
         selectedItemColor: Colors.blue,

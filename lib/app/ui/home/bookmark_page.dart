@@ -16,12 +16,16 @@ class BookmarkPage extends StatefulWidget {
   State<BookmarkPage> createState() => _BookmarkPageState();
 }
 
-class _BookmarkPageState extends State<BookmarkPage> {
+class _BookmarkPageState extends State<BookmarkPage>
+    with AutomaticKeepAliveClientMixin {
   @override
   void initState() {
     super.initState();
     init();
   }
+
+  @override
+  bool get wantKeepAlive => false;
 
   bool isLoading = false;
   List<Bookmark> list = [];
@@ -46,6 +50,7 @@ class _BookmarkPageState extends State<BookmarkPage> {
 
   @override
   Widget build(BuildContext context) {
+    super.build(context);
     return Scaffold(
       appBar: AppBar(title: Text('Book Mark')),
       body: isLoading

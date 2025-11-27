@@ -1,15 +1,14 @@
 import 'package:apyar_app/app/core/models/apyar.dart';
+import 'package:apyar_app/app/core/providers/apyar_provider.dart';
 import 'package:apyar_app/app/routes.dart';
 import 'package:apyar_app/app/ui/components/bookmark_toggle_widget.dart';
 import 'package:apyar_app/app/ui/content/content_screen.dart';
 import 'package:apyar_app/app/ui/search/search_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:apyar_app/more_libs/setting/setting.dart';
-import 'package:t_db/t_db.dart';
-import 'package:t_widgets/functions/index.dart';
-import 'package:t_widgets/widgets/t_loader.dart';
-
-final _box = TDB.getInstance().getBox<Apyar>();
+import 'package:provider/provider.dart';
+import 'package:t_widgets/t_widgets_dev.dart';
+import 'package:than_pkg/than_pkg.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -18,49 +17,67 @@ class HomePage extends StatefulWidget {
   State<HomePage> createState() => _HomePageState();
 }
 
-class _HomePageState extends State<HomePage> {
+class _HomePageState extends State<HomePage>
+    with AutomaticKeepAliveClientMixin {
   @override
   void initState() {
     super.initState();
-    init();
+    WidgetsBinding.instance.addPostFrameCallback((timeStamp) => init());
   }
 
-  bool isLoading = false;
-  List<Apyar> list = [];
+  @override
+  bool get wantKeepAlive => true;
 
-  Future<void> init() async {
-    try {
-      setState(() {
-        isLoading = true;
-      });
-
-      list = await _box.getAll();
-      if (!mounted) return;
-      setState(() {
-        isLoading = false;
-      });
-    } catch (e) {
-      if (!mounted) return;
-      setState(() {
-        isLoading = false;
-      });
-      showTMessageDialogError(context, e.toString());
-    }
+  Future<void> init({bool isUsedCache = true}) async {
+    context.read<ApyarProvider>().init(
+      isUsedCache: isUsedCache,
+      onError: (message) {
+        if (!mounted) return;
+        showTMessageDialogError(context, message);
+      },
+    );
   }
 
   @override
   Widget build(BuildContext context) {
+    super.build(context);
     return Scaffold(
-      appBar: AppBar(title: Text(Setting.instance.appName)),
-      body: isLoading
+      appBar: _getAppbar(),
+      body: getProvider.isLoading
           ? Center(child: TLoader.random())
-          : CustomScrollView(
-              slivers: [
-                _getSearchBar(),
-                SliverToBoxAdapter(child: SizedBox(height: 10)),
-                _getList(),
-              ],
+          : RefreshIndicator.adaptive(
+              onRefresh: () async => init(isUsedCache: false),
+              child: NestedScrollView(
+                headerSliverBuilder: (context, innerBoxIsScrolled) => [
+                  // _getAppbar(),
+                  _getSearchBar(),
+                ],
+                body: CustomScrollView(
+                  slivers: [
+                    SliverToBoxAdapter(child: SizedBox(height: 10)),
+                    _getList(),
+                  ],
+                ),
+              ),
             ),
+    );
+  }
+
+  ApyarProvider get getProvider => context.watch<ApyarProvider>();
+
+  AppBar _getAppbar() {
+    return AppBar(
+      title: Text(Setting.instance.appName),
+      actions: [
+        if (!TPlatform.isDesktop)
+          SizedBox.shrink()
+        else
+          IconButton(
+            onPressed: () => init(isUsedCache: false),
+            icon: Icon(Icons.refresh),
+          ),
+        IconButton(onPressed: _onShowMenu, icon: Icon(Icons.more_vert_rounded)),
+      ],
     );
   }
 
@@ -81,8 +98,8 @@ class _HomePageState extends State<HomePage> {
 
   Widget _getList() {
     return SliverList.separated(
-      itemCount: list.length,
-      itemBuilder: (context, index) => _getListItem(list[index]),
+      itemCount: getProvider.list.length,
+      itemBuilder: (context, index) => _getListItem(getProvider.list[index]),
       separatorBuilder: (context, index) => Divider(),
     );
   }
@@ -93,6 +110,30 @@ class _HomePageState extends State<HomePage> {
       trailing: BookmarkToggleWidget(apyar: apyar),
       onTap: () =>
           goRoute(context, builder: (context) => ContentScreen(apyar: apyar)),
+    );
+  }
+
+  //menu
+  void _onShowMenu() {
+    showTMenuBottomSheet(
+      context,
+      children: [
+        ListTile(
+          leading: Icon(Icons.sort),
+          title: Text('Sort'),
+          onTap: () {
+            Navigator.pop(context);
+          },
+        ),
+        ListTile(
+          leading: Icon(Icons.sort),
+          title: Text('Random Sort'),
+          onTap: () {
+            Navigator.pop(context);
+            context.read<ApyarProvider>().sortRandom();
+          },
+        ),
+      ],
     );
   }
 }
