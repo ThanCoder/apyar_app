@@ -1,3 +1,3 @@
-# thancoder_pre_app
+# Apyar Text Reader App
 
 PreBuild App

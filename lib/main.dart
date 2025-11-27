@@ -1,3 +1,4 @@
+import 'package:apyar_app/app/core/db_util.dart';
 import 'package:apyar_app/app/core/models/apyar.dart';
 import 'package:apyar_app/app/core/models/apyar_content.dart';
 import 'package:apyar_app/app/core/models/bookmark.dart';
@@ -5,6 +6,7 @@ import 'package:apyar_app/more_libs/setting/core/path_util.dart';
 import 'package:flutter/material.dart';
 import 'package:t_db/t_db.dart';
 import 'package:t_widgets/t_widgets.dart';
+import 'package:t_widgets/theme/t_theme_services.dart';
 import 'package:than_pkg/than_pkg.dart';
 import 'package:apyar_app/app/my_app.dart';
 import 'package:apyar_app/more_libs/desktop_exe/desktop_exe.dart';
@@ -20,16 +22,16 @@ void main() async {
       showTSnackBar(context, message);
     },
   );
-
+  TThemeServices.instance.init();
   await TWidgets.instance.init(
-    defaultImageAssetsPath: 'assets/thancoder_logo.png',
+    defaultImageAssetsPath: 'assets/apyar_log_3.jpg',
     getDarkMode: () => Setting.getAppConfig.isDarkTheme,
   );
 
   if (TPlatform.isDesktop) {
     await DesktopExe.exportDesktopIcon(
       name: Setting.instance.appName,
-      assetsIconPath: 'assets/thancoder_logo.png',
+      assetsIconPath: 'assets/apyar_log_3.jpg',
     );
 
     WindowOptions windowOptions = WindowOptions(
@@ -46,9 +48,13 @@ void main() async {
       // await windowManager.focus();
     });
   }
+  // recent db
+  await TRecentDB.getInstance.init(
+    rootPath: PathUtil.getConfigPath(name: 'recent.db.json'),
+  );
   // db
   final db = TDB.getInstance();
-  await db.open(PathUtil.getDatabasePath(name: 'apyar.db'));
+  await db.open(getLocalDatabasePath());
   db.setAdapter<Apyar>(ApyarAdapter());
   db.setAdapter<ApyarContent>(ApyarContentAdapter());
   db.setAdapter<Bookmark>(BookmarkAdapter());

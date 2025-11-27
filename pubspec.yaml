@@ -1,9 +1,9 @@
 name: apyar_app
-description: "Flutter Pre Build App"
+description: "Apyar Text Reader App"
 publish_to: "none" # Remove this line if you wish to publish to pub.dev
 repository: https://github.com/ThanCoder/apyar_app
 
-version: 1.0.0+1
+version: 1.0.0
 
 environment:
   sdk: ^3.10.1
@@ -17,6 +17,7 @@ dependencies:
   # t_db: ^1.0.0
   t_db:
     path: /home/than/projects/plugins/t_db/
+  t_client: ^0.1.6
 
 dev_dependencies:
   flutter_test:
@@ -30,7 +31,7 @@ dev_dependencies:
 # dev lib
 flutter_launcher_icons:
   android: "launcher_icon"
-  image_path: "assets/logo_1.jpg"
+  image_path: "assets/apyar_log_3.jpg"
 
 flutter:
   uses-material-design: true

@@ -1,5 +1,6 @@
 import 'package:apyar_app/app/core/models/apyar.dart';
 import 'package:apyar_app/app/core/models/apyar_content.dart';
+import 'package:apyar_app/app/ui/components/bookmark_toggle_widget.dart';
 import 'package:flutter/material.dart';
 import 'package:t_db/t_db.dart';
 import 'package:t_widgets/functions/message_func.dart';
@@ -24,6 +25,7 @@ class _ContentScreenState extends State<ContentScreen> {
 
   bool isLoading = false;
   ApyarContent? content;
+  List<String> textList = [];
 
   void init() async {
     try {
@@ -33,6 +35,9 @@ class _ContentScreenState extends State<ContentScreen> {
       content = await _box.getOne(
         (value) => value.apyarId == widget.apyar.autoId,
       );
+      if (content != null) {
+        textList.addAll(content!.body.split('\n\n'));
+      }
 
       if (!mounted) return;
       setState(() {
@@ -52,17 +57,17 @@ class _ContentScreenState extends State<ContentScreen> {
     return Scaffold(
       body: isLoading
           ? Center(child: TLoader.random())
-          : CustomScrollView(
-              slivers: [
-                SliverAppBar(
-                  title: Text(widget.apyar.title),
-                  snap: true,
-                  floating: true,
-                  pinned: false,
-                ),
-                _getContent(),
-              ],
-            ),
+          : CustomScrollView(slivers: [_getAppbar(), _getContent()]),
+    );
+  }
+
+  Widget _getAppbar() {
+    return SliverAppBar(
+      title: Text(widget.apyar.title),
+      snap: true,
+      floating: true,
+      pinned: false,
+      actions: [BookmarkToggleWidget(apyar: widget.apyar)],
     );
   }
 
@@ -70,11 +75,25 @@ class _ContentScreenState extends State<ContentScreen> {
     if (content == null) {
       return SliverFillRemaining(child: Text('Content မရှိပါ!...'));
     }
-    return SliverToBoxAdapter(
-      child: Padding(
-        padding: const EdgeInsets.all(8.0),
-        child: Text(content!.body, style: TextStyle(fontSize: 18)),
-      ),
+    return _getTextList();
+    // return SliverToBoxAdapter(
+    //   child: Padding(
+    //     padding: const EdgeInsets.all(8.0),
+    //     child: Text(content!.body, style: TextStyle(fontSize: 18)),
+    //   ),
+    // );
+  }
+
+  Widget _getTextList() {
+    return SliverList.builder(
+      itemCount: textList.length,
+      itemBuilder: (context, index) {
+        final text = textList[index];
+        return Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 8),
+          child: Text(text, style: TextStyle(fontSize: 18)),
+        );
+      },
     );
   }
 }

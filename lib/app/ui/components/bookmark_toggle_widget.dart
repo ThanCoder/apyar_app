@@ -14,7 +14,35 @@ class BookmarkToggleWidget extends StatefulWidget {
   State<BookmarkToggleWidget> createState() => _BookmarkToggleWidgetState();
 }
 
-class _BookmarkToggleWidgetState extends State<BookmarkToggleWidget> {
+class _BookmarkToggleWidgetState extends State<BookmarkToggleWidget>
+    with TBoxEventListener {
+  @override
+  void initState() {
+    _box.addListener(this);
+    super.initState();
+  }
+
+  @override
+  void dispose() {
+    _box.removeListener(this);
+    super.dispose();
+  }
+
+  @override
+  void onTBoxDatabaseChanged(TBEventType event, int? id) async {
+    if (id == null) return;
+    if (!mounted) return;
+    if (event == TBEventType.delete) {
+      setState(() {});
+      return;
+    }
+    final found = await _box.getOne(
+      (value) => value.apyarId == widget.apyar.autoId,
+    );
+    if (found == null) return;
+    setState(() {});
+  }
+
   @override
   Widget build(BuildContext context) {
     return FutureBuilder(

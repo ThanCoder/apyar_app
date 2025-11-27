@@ -469,13 +469,21 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "1.4.1"
+  t_client:
+    dependency: "direct main"
+    description:
+      name: t_client
+      sha256: e3051f06ea51afaecb697324ac515dba8355183caee8ab03c43ecb90abe2fb65
+      url: "https://pub.dev"
+    source: hosted
+    version: "0.1.6"
   t_db:
     dependency: "direct main"
     description:
       path: "/home/than/projects/plugins/t_db/"
       relative: false
     source: path
-    version: "1.0.0"
+    version: "1.1.1"
   t_widgets:
     dependency: "direct main"
     description:

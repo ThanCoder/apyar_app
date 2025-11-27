@@ -2,6 +2,7 @@ import 'package:apyar_app/app/core/models/apyar.dart';
 import 'package:apyar_app/app/routes.dart';
 import 'package:apyar_app/app/ui/components/bookmark_toggle_widget.dart';
 import 'package:apyar_app/app/ui/content/content_screen.dart';
+import 'package:apyar_app/app/ui/search/search_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:apyar_app/more_libs/setting/setting.dart';
 import 'package:t_db/t_db.dart';
@@ -53,7 +54,13 @@ class _HomePageState extends State<HomePage> {
       appBar: AppBar(title: Text(Setting.instance.appName)),
       body: isLoading
           ? Center(child: TLoader.random())
-          : CustomScrollView(slivers: [_getSearchBar(), _getList()]),
+          : CustomScrollView(
+              slivers: [
+                _getSearchBar(),
+                SliverToBoxAdapter(child: SizedBox(height: 10)),
+                _getList(),
+              ],
+            ),
     );
   }
 
@@ -64,11 +71,10 @@ class _HomePageState extends State<HomePage> {
       floating: true,
       pinned: false,
       flexibleSpace: SearchBar(
+        autoFocus: false,
         hintText: 'Search...',
         readOnly: true,
-        onTap: () {
-          print('search');
-        },
+        onTap: () => goRoute(context, builder: (context) => SearchScreen()),
       ),
     );
   }

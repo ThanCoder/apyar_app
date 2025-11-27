@@ -1,4 +1,4 @@
-package com.example.thancoder_pre_app
+package thancoder.apyar.app
 
 import io.flutter.embedding.android.FlutterActivity
 
