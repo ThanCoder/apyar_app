@@ -1,0 +1,12 @@
+{
+ "customPath": "/home/than/.appName",
+ "forwardProxyUrl": "",
+ "browserForwardProxyUrl": "",
+ "proxyUrl": "",
+ "hostUrl": "",
+ "isUseCustomPath": false,
+ "isUseForwardProxy": false,
+ "isUseProxy": false,
+ "isDarkTheme": false,
+ "themeMode": "light"
+}
