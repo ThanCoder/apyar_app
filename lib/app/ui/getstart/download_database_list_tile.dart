@@ -42,7 +42,7 @@ class _DownloadDatabaseListTileState extends State<DownloadDatabaseListTile> {
     if (isLocalDatabaseExists()) {
       showTConfirmDialog(
         context,
-        contentText: 'Databas ကိုပြန်ပြီး Download ပြုလုပ်ချင်ပါသလား?',
+        contentText: 'Database File ကိုပြန်ပြီး Download ပြုလုပ်ချင်ပါသလား?',
         cancelText: 'မလုပ်ဘူး',
         submitText: 'Download',
         onSubmit: _download,

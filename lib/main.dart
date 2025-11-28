@@ -3,6 +3,7 @@ import 'package:apyar_app/app/core/models/apyar.dart';
 import 'package:apyar_app/app/core/models/apyar_content.dart';
 import 'package:apyar_app/app/core/models/bookmark.dart';
 import 'package:apyar_app/app/core/providers/apyar_provider.dart';
+import 'package:apyar_app/app/core/providers/bookmark_provider.dart';
 import 'package:apyar_app/more_libs/setting/core/path_util.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -63,7 +64,10 @@ void main() async {
 
   runApp(
     MultiProvider(
-      providers: [ChangeNotifierProvider(create: (context) => ApyarProvider())],
+      providers: [
+        ChangeNotifierProvider(create: (context) => ApyarProvider()),
+        ChangeNotifierProvider(create: (context) => BookmarkProvider()),
+      ],
       child: const MyApp(),
     ),
   );

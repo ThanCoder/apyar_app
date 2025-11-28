@@ -1,12 +1,14 @@
 import 'package:apyar_app/app/core/models/apyar.dart';
 import 'package:apyar_app/app/core/models/bookmark.dart';
+import 'package:apyar_app/app/core/providers/bookmark_provider.dart';
 import 'package:apyar_app/app/routes.dart';
 import 'package:apyar_app/app/ui/content/content_screen.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:t_db/t_db.dart';
 import 'package:t_widgets/t_widgets.dart';
+import 'package:than_pkg/than_pkg.dart';
 
-final _box = TDB.getInstance().getBox<Bookmark>();
 final _apyarBox = TDB.getInstance().getBox<Apyar>();
 
 class BookmarkPage extends StatefulWidget {
@@ -21,44 +23,53 @@ class _BookmarkPageState extends State<BookmarkPage>
   @override
   void initState() {
     super.initState();
-    init();
+    WidgetsBinding.instance.addPostFrameCallback((_) => init());
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
   }
 
   @override
   bool get wantKeepAlive => false;
 
-  bool isLoading = false;
-  List<Bookmark> list = [];
   Future<void> init() async {
-    try {
-      setState(() {
-        isLoading = true;
-      });
-      list = await _box.getAll();
-      if (!mounted) return;
-      setState(() {
-        isLoading = false;
-      });
-    } catch (e) {
-      if (!mounted) return;
-      setState(() {
-        isLoading = false;
-      });
-      showTMessageDialogError(context, e.toString());
-    }
+    context.read<BookmarkProvider>().init(
+      onError: (message) {
+        if (!mounted) return;
+        showTMessageDialogError(context, message);
+      },
+    );
   }
+
+  BookmarkProvider get getProvider => context.watch<BookmarkProvider>();
 
   @override
   Widget build(BuildContext context) {
     super.build(context);
     return Scaffold(
-      appBar: AppBar(title: Text('Book Mark')),
-      body: isLoading
+      appBar: AppBar(
+        title: Text('Book Mark'),
+        actions: [
+          !TPlatform.isDesktop
+              ? SizedBox.shrink()
+              : IconButton(
+                  onPressed: context.read<BookmarkProvider>().init,
+                  icon: Icon(Icons.refresh),
+                ),
+        ],
+      ),
+      body: getProvider.isLoading
           ? Center(child: TLoader.random())
-          : ListView.separated(
-              itemCount: list.length,
-              separatorBuilder: (context, index) => Divider(),
-              itemBuilder: (context, index) => _getListItem(list[index]),
+          : RefreshIndicator.adaptive(
+              onRefresh: context.read<BookmarkProvider>().init,
+              child: ListView.separated(
+                itemCount: getProvider.list.length,
+                separatorBuilder: (context, index) => Divider(),
+                itemBuilder: (context, index) =>
+                    _getListItem(getProvider.list[index]),
+              ),
             ),
     );
   }
@@ -74,14 +85,7 @@ class _BookmarkPageState extends State<BookmarkPage>
 
   Widget _getBookmarkRemoveWidget(Bookmark bookmark) {
     return IconButton(
-      onPressed: () async {
-        final index = list.indexWhere((e) => e.autoId == bookmark.autoId);
-        if (index == -1) return;
-        list.removeAt(index);
-        await _box.deleteById(bookmark.autoId);
-        if (!mounted) return;
-        setState(() {});
-      },
+      onPressed: () => context.read<BookmarkProvider>().delete(bookmark),
       icon: Icon(color: Colors.red, Icons.bookmark_remove),
     );
   }

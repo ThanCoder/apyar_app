@@ -88,8 +88,13 @@ class _HomePageState extends State<HomePage>
       floating: true,
       pinned: false,
       flexibleSpace: SearchBar(
+        shape: WidgetStatePropertyAll(
+          RoundedRectangleBorder(
+            borderRadius: BorderRadiusGeometry.circular(8),
+          ),
+        ),
         autoFocus: false,
-        hintText: 'Search...',
+        hintText: 'Search Text...',
         readOnly: true,
         onTap: () => goRoute(context, builder: (context) => SearchScreen()),
       ),

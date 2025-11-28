@@ -19,7 +19,7 @@ class _HomeScreenState extends State<HomeScreen> {
         index: index,
         children: [
           HomePage(),
-          BookmarkPage(key: ValueKey(index == 1)),
+          BookmarkPage(),
           MoreApp(key: ValueKey(index == 1)),
         ],
       ),

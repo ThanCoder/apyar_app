@@ -88,6 +88,11 @@ class _SearchScreenState extends State<SearchScreen> {
         controller: searchController,
         autoFocus: true,
         hintText: 'Search Text...',
+        shape: WidgetStatePropertyAll(
+          RoundedRectangleBorder(
+            borderRadius: BorderRadiusGeometry.circular(9),
+          ),
+        ),
         trailing: [
           IconButton(
             onPressed: () {
