@@ -47,7 +47,7 @@ class _ThemeModesChooserState extends State<ThemeModesChooser> {
                     );
                     Setting.getAppConfigNotifier.value = newConfig;
                     newConfig.save();
-                    TThemeServices.instance.init();
+                    TThemeServices.instance.checkCurrentTheme();
 
                     if (!mounted) return;
                     setState(() {});

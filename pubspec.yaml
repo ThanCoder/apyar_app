@@ -12,13 +12,13 @@ dependencies:
     sdk: flutter
   cupertino_icons: ^1.0.8
   than_pkg: ^5.0.0
-  t_widgets: ^1.8.5
+  t_widgets: ^1.9.6
   flutter_markdown: ^0.7.7+1
-  # t_db: ^1.0.0
-  t_db:
-    path: /home/than/projects/plugins/t_db/
+  # t_db:
+  #   path: /home/than/projects/plugins/t_db/
   t_client: ^0.1.6
   provider: ^6.1.5+1
+  t_db: ^1.1.1
 
 dev_dependencies:
   flutter_test:
