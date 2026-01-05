@@ -43,16 +43,16 @@ class _HomePageState extends State<HomePage>
     super.build(context);
     return Scaffold(
       appBar: _getAppbar(),
-      body: getProvider.isLoading
+      body: getWProvider.isLoading
           ? Center(child: TLoader.random())
-          : RefreshIndicator.adaptive(
-              onRefresh: () async => init(isUsedCache: false),
-              child: NestedScrollView(
-                headerSliverBuilder: (context, innerBoxIsScrolled) => [
-                  // _getAppbar(),
-                  _getSearchBar(),
-                ],
-                body: CustomScrollView(
+          : NestedScrollView(
+              headerSliverBuilder: (context, innerBoxIsScrolled) => [
+                // _getAppbar(),
+                _getSearchBar(),
+              ],
+              body: RefreshIndicator.adaptive(
+                onRefresh: () async => init(isUsedCache: false),
+                child: CustomScrollView(
                   slivers: [
                     SliverToBoxAdapter(child: SizedBox(height: 10)),
                     _getList(),
@@ -63,12 +63,14 @@ class _HomePageState extends State<HomePage>
     );
   }
 
-  ApyarProvider get getProvider => context.watch<ApyarProvider>();
+  ApyarProvider get getWProvider => context.watch<ApyarProvider>();
+  ApyarProvider get getRProvider => context.read<ApyarProvider>();
 
   AppBar _getAppbar() {
     return AppBar(
       title: Text(Setting.instance.appName),
       actions: [
+        IconButton(onPressed: _showSort, icon: Icon(Icons.sort)),
         if (!TPlatform.isDesktop)
           SizedBox.shrink()
         else
@@ -76,7 +78,7 @@ class _HomePageState extends State<HomePage>
             onPressed: () => init(isUsedCache: false),
             icon: Icon(Icons.refresh),
           ),
-        IconButton(onPressed: _onShowMenu, icon: Icon(Icons.more_vert_rounded)),
+        // IconButton(onPressed: _onShowMenu, icon: Icon(Icons.more_vert_rounded)),
       ],
     );
   }
@@ -103,8 +105,8 @@ class _HomePageState extends State<HomePage>
 
   Widget _getList() {
     return SliverList.separated(
-      itemCount: getProvider.list.length,
-      itemBuilder: (context, index) => _getListItem(getProvider.list[index]),
+      itemCount: getWProvider.list.length,
+      itemBuilder: (context, index) => _getListItem(getWProvider.list[index]),
       separatorBuilder: (context, index) => Divider(),
     );
   }
@@ -118,27 +120,14 @@ class _HomePageState extends State<HomePage>
     );
   }
 
-  //menu
-  void _onShowMenu() {
-    showTMenuBottomSheet(
+  // sort
+  void _showSort() {
+    showTSortDialog(
       context,
-      children: [
-        ListTile(
-          leading: Icon(Icons.sort),
-          title: Text('Sort'),
-          onTap: () {
-            Navigator.pop(context);
-          },
-        ),
-        ListTile(
-          leading: Icon(Icons.sort),
-          title: Text('Random Sort'),
-          onTap: () {
-            Navigator.pop(context);
-            context.read<ApyarProvider>().sortRandom();
-          },
-        ),
-      ],
+      isAsc: getRProvider.sortAsc,
+      sortList: getRProvider.sortList,
+      currentId: getRProvider.sortId,
+      sortDialogCallback: getRProvider.setSort,
     );
   }
 }

@@ -21,7 +21,7 @@ class _BookmarkToggleWidgetState extends State<BookmarkToggleWidget> {
 
   @override
   void initState() {
-    WidgetsBinding.instance.addPostFrameCallback((_) => init());
+    // WidgetsBinding.instance.addPostFrameCallback((_) => init());
     _subscription = _box.stream.listen((data) {
       if (!mounted || data.id == null) return;
       if (data.type == TBEventType.update) return;
@@ -38,6 +38,7 @@ class _BookmarkToggleWidgetState extends State<BookmarkToggleWidget> {
         setState(() {});
       }
     });
+    init();
     super.initState();
   }
 
@@ -47,6 +48,14 @@ class _BookmarkToggleWidgetState extends State<BookmarkToggleWidget> {
     super.dispose();
   }
 
+  @override
+  void didUpdateWidget(covariant BookmarkToggleWidget oldWidget) {
+    if (oldWidget.apyar.autoId != widget.apyar.autoId) {
+      init();
+    }
+    super.didUpdateWidget(oldWidget);
+  }
+
   Bookmark? bookmark;
   bool isLoading = false;
   void init() async {
@@ -54,6 +63,7 @@ class _BookmarkToggleWidgetState extends State<BookmarkToggleWidget> {
       setState(() {
         isLoading = true;
       });
+      bookmark = null;
       bookmark = await _box.getOne(
         (value) => value.apyarId == widget.apyar.autoId,
       );
