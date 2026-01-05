@@ -9,7 +9,6 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:t_db/t_db.dart';
 import 'package:t_widgets/t_widgets.dart';
-import 'package:t_widgets/theme/t_theme_services.dart';
 import 'package:than_pkg/than_pkg.dart';
 import 'package:apyar_app/app/my_app.dart';
 import 'package:apyar_app/more_libs/desktop_exe/desktop_exe.dart';
@@ -25,10 +24,9 @@ void main() async {
       showTSnackBar(context, message);
     },
   );
-  TThemeServices.instance.init();
   await TWidgets.instance.init(
     defaultImageAssetsPath: 'assets/apyar_log_3.jpg',
-    getDarkMode: () => Setting.getAppConfig.isDarkTheme,
+    isDarkTheme: () => Setting.getAppConfig.isDarkTheme,
   );
 
   if (TPlatform.isDesktop) {

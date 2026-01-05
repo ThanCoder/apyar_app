@@ -7,7 +7,7 @@ import 'package:apyar_app/app/ui/search/search_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:apyar_app/more_libs/setting/setting.dart';
 import 'package:provider/provider.dart';
-import 'package:t_widgets/t_widgets_dev.dart';
+import 'package:t_widgets/t_widgets.dart';
 import 'package:than_pkg/than_pkg.dart';
 
 class HomePage extends StatefulWidget {

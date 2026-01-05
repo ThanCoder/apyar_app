@@ -111,6 +111,14 @@ class _SearchScreenState extends State<SearchScreen> {
   }
 
   Widget _getResultList() {
+    if (searchController.text.isEmpty) {
+      return SliverFillRemaining(
+        child: Center(child: Text('တစ်ခုခုရေးပါ....')),
+      );
+    }
+    if (!isSearching && resultList.isEmpty) {
+      return SliverFillRemaining(child: Center(child: Text('ရှာမတွေ့ပါ....')));
+    }
     return SliverList.separated(
       itemCount: resultList.length,
       itemBuilder: (context, index) => _getListItem(resultList[index]),

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:t_widgets/theme/t_theme_services.dart';
+import 'package:t_widgets/t_widgets.dart';
 import 'package:than_pkg/than_pkg.dart';
+import 'package:apyar_app/more_libs/setting/app_config.dart';
 import 'package:apyar_app/more_libs/setting/setting.dart';
 
 class ThemeModesChooser extends StatefulWidget {
@@ -28,27 +29,28 @@ class _ThemeModesChooserState extends State<ThemeModesChooser> {
             ValueListenableBuilder(
               valueListenable: Setting.getAppConfigNotifier,
               builder: (context, config, child) {
-                return DropdownButton<TThemeModes>(
+                return DropdownButton<ThemeMode>(
                   padding: EdgeInsets.all(5),
                   borderRadius: BorderRadius.circular(4),
                   value: config.themeMode,
-                  items: TThemeModes.values
+                  items: ThemeMode.values
                       .map(
-                        (e) => DropdownMenuItem<TThemeModes>(
+                        (e) => DropdownMenuItem<ThemeMode>(
                           value: e,
                           child: Text(e.name.toCaptalize()),
                         ),
                       )
                       .toList(),
-                  onChanged: (value) {
+                  onChanged: (value) async {
                     final newConfig = config.copyWith(
                       themeMode: value,
-                      isDarkTheme: value!.isDarkMode,
+                      isDarkTheme: value!.isDarkTheme,
                     );
                     Setting.getAppConfigNotifier.value = newConfig;
-                    newConfig.save();
-                    TThemeServices.instance.checkCurrentTheme();
-
+                    await newConfig.save();
+                    if (newConfig.themeMode == ThemeMode.system) {
+                      PBrightnessServices.instance.checkCurrentTheme();
+                    }
                     if (!mounted) return;
                     setState(() {});
                   },

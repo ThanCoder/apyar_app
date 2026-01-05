@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:apyar_app/app/core/models/apyar.dart';
 import 'package:apyar_app/app/core/models/bookmark.dart';
 import 'package:flutter/material.dart';
@@ -14,69 +16,88 @@ class BookmarkToggleWidget extends StatefulWidget {
   State<BookmarkToggleWidget> createState() => _BookmarkToggleWidgetState();
 }
 
-class _BookmarkToggleWidgetState extends State<BookmarkToggleWidget>
-    with TBoxEventListener {
+class _BookmarkToggleWidgetState extends State<BookmarkToggleWidget> {
+  late StreamSubscription<TDBoxStreamEvent> _subscription;
+
   @override
   void initState() {
-    _box.addListener(this);
+    WidgetsBinding.instance.addPostFrameCallback((_) => init());
+    _subscription = _box.stream.listen((data) {
+      if (!mounted || data.id == null) return;
+      if (data.type == TBEventType.update) return;
+      // add ဆိုရင် စစ်ဆေးတော့မယ်
+      if (data.type == TBEventType.add) {
+        init();
+        return;
+      }
+      // bookmark id တူလားစစ်မယ်
+      if (bookmark != null &&
+          data.type == TBEventType.delete &&
+          bookmark!.autoId == data.id) {
+        bookmark = null;
+        setState(() {});
+      }
+    });
     super.initState();
   }
 
   @override
   void dispose() {
-    _box.removeListener(this);
+    _subscription.cancel();
     super.dispose();
   }
 
-  @override
-  void onTBoxDatabaseChanged(TBEventType event, int? id) async {
-    if (id == null) return;
-    if (!mounted) return;
-    if (event == TBEventType.delete) {
-      setState(() {});
-      return;
+  Bookmark? bookmark;
+  bool isLoading = false;
+  void init() async {
+    try {
+      setState(() {
+        isLoading = true;
+      });
+      bookmark = await _box.getOne(
+        (value) => value.apyarId == widget.apyar.autoId,
+      );
+
+      if (!mounted) return;
+      setState(() {
+        isLoading = false;
+      });
+    } catch (e) {
+      debugPrint('[]: $e');
+      if (!mounted) return;
+      setState(() {
+        isLoading = false;
+      });
     }
-    final found = await _box.getOne(
-      (value) => value.apyarId == widget.apyar.autoId,
-    );
-    if (found == null) return;
-    setState(() {});
   }
 
   @override
   Widget build(BuildContext context) {
-    return FutureBuilder(
-      future: _box.getOne((value) => value.apyarId == widget.apyar.autoId),
-      builder: (context, snapshot) {
-        if (snapshot.connectionState == ConnectionState.waiting) {
-          // return Text('Loading...');
-          return SizedBox(width: 25, height: 25, child: TLoader(size: 25));
+    if (isLoading) {
+      return SizedBox(width: 25, height: 25, child: TLoader(size: 25));
+    }
+    return IconButton(
+      onPressed: () async {
+        if (bookmark == null) {
+          final newBook = Bookmark(
+            apyarId: widget.apyar.autoId,
+            title: widget.apyar.title,
+            date: DateTime.now(),
+          );
+          await _box.add(newBook);
+          bookmark = newBook;
+        } else {
+          if (bookmark == null) return;
+          await _box.deleteById(bookmark!.autoId);
+          bookmark = null;
         }
-        Bookmark? bookmark = snapshot.data;
-
-        return IconButton(
-          onPressed: () async {
-            if (snapshot.data == null) {
-              await _box.add(
-                Bookmark(
-                  apyarId: widget.apyar.autoId,
-                  title: widget.apyar.title,
-                  date: DateTime.now(),
-                ),
-              );
-            } else {
-              if (bookmark == null) return;
-              await _box.deleteById(bookmark.autoId);
-            }
-            if (!mounted) return;
-            setState(() {});
-          },
-          icon: Icon(
-            color: bookmark == null ? Colors.blue : Colors.red,
-            bookmark == null ? Icons.bookmark_add : Icons.bookmark_remove,
-          ),
-        );
+        if (!mounted) return;
+        setState(() {});
       },
+      icon: Icon(
+        color: bookmark == null ? Colors.blue : Colors.red,
+        bookmark == null ? Icons.bookmark_add : Icons.bookmark_remove,
+      ),
     );
   }
 }
