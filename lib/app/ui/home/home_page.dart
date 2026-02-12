@@ -3,10 +3,12 @@ import 'package:apyar_app/app/core/providers/apyar_provider.dart';
 import 'package:apyar_app/app/routes.dart';
 import 'package:apyar_app/app/ui/components/bookmark_toggle_widget.dart';
 import 'package:apyar_app/app/ui/content/content_screen.dart';
+import 'package:apyar_app/app/ui/database_manager/database_manager_screen.dart';
 import 'package:apyar_app/app/ui/search/search_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:apyar_app/more_libs/setting/setting.dart';
 import 'package:provider/provider.dart';
+import 'package:t_db/t_db.dart';
 import 'package:t_widgets/t_widgets.dart';
 import 'package:than_pkg/than_pkg.dart';
 
@@ -22,13 +24,17 @@ class _HomePageState extends State<HomePage>
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((timeStamp) => init());
+    WidgetsBinding.instance.addPostFrameCallback((_) => init());
   }
 
   @override
   bool get wantKeepAlive => true;
 
   Future<void> init({bool isUsedCache = true}) async {
+    if (!TDB.getInstance().isDataRecordCreatedExists) {
+      goRoute(context, builder: (context) => DatabaseManagerScreen());
+      return;
+    }
     context.read<ApyarProvider>().init(
       isUsedCache: isUsedCache,
       onError: (message) {

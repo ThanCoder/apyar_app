@@ -1,7 +1,8 @@
 import 'dart:async';
 import 'dart:io';
 
-import 'package:apyar_app/app/core/db_util.dart';
+import 'package:apyar_app/app/ui/database_manager/database_services.dart';
+import 'package:apyar_app/app/ui/database_manager/database_manager_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:t_client/t_client.dart';
 import 'package:t_db/t_db.dart';
@@ -23,11 +24,7 @@ class _DownloadDatabaseListTileState extends State<DownloadDatabaseListTile> {
       child: ListTile(
         title: Text('Downloaded Database'),
         subtitle: Text(
-          'Database ကို Download ${isLocalDatabaseExists() ? 'လုပ်ထားပြီးပါပြီ' : 'လုပ်ရပါမယ်'}',
-        ),
-        trailing: Icon(
-          color: isExistsDB ? Colors.green : Colors.red,
-          isExistsDB ? Icons.check : Icons.check_box_outline_blank,
+          'Database ကို Download ${DatabaseServices.isLocalDatabaseExists() ? 'လုပ်ထားပြီးပါပြီ' : 'လုပ်ရပါမယ်'}',
         ),
         onTap: _downloadConfirm,
       ),
@@ -35,11 +32,11 @@ class _DownloadDatabaseListTileState extends State<DownloadDatabaseListTile> {
   }
 
   bool get isExistsDB {
-    return isLocalDatabaseExists();
+    return DatabaseServices.isLocalDatabaseExists();
   }
 
   void _downloadConfirm() {
-    if (isLocalDatabaseExists()) {
+    if (DatabaseServices.isLocalDatabaseExists()) {
       showTConfirmDialog(
         context,
         contentText: 'Database File ကိုပြန်ပြီး Download ပြုလုပ်ချင်ပါသလား?',
@@ -53,8 +50,8 @@ class _DownloadDatabaseListTileState extends State<DownloadDatabaseListTile> {
   }
 
   void _download() async {
-    final dbFile = File(getLocalDatabasePath());
-    final dbLockFile = File('${getLocalDatabasePath()}.lock');
+    final dbFile = File(DatabaseServices.getLocalDatabasePath());
+    final dbLockFile = File('${DatabaseServices.getLocalDatabasePath()}.lock');
     if (dbFile.existsSync()) {
       await dbFile.delete();
     }
@@ -71,9 +68,16 @@ class _DownloadDatabaseListTileState extends State<DownloadDatabaseListTile> {
           'https://github.com/ThanCoder/apyar_app/releases/download/database.v1/apyar.v1.db',
         ],
         onSuccess: () async {
-          await TDB.getInstance().restart();
-          if (!mounted) return;
-          setState(() {});
+          try {
+            await TDB.getInstance().restart();
+            if (!mounted) return;
+            setState(() {});
+            databaseManagerScreenStateNotifier.value =
+                !databaseManagerScreenStateNotifier.value;
+          } catch (e) {
+            if (!context.mounted) return;
+            showTMessageDialogError(context, e.toString());
+          }
         },
       ),
     );
@@ -82,8 +86,8 @@ class _DownloadDatabaseListTileState extends State<DownloadDatabaseListTile> {
 
 class DatabaseDownloadManager extends TDownloadManagerSimple {
   final client = TClient();
-  final token = TClientToken(isCancelFileDelete: false);
-  final savePath = getLocalDatabasePath();
+  final token = TClientToken(isCancelFileDelete: true);
+  final savePath = DatabaseServices.getLocalDatabasePath();
   @override
   void cancel() {
     token.cancel();

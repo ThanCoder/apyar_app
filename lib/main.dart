@@ -1,9 +1,11 @@
-import 'package:apyar_app/app/core/db_util.dart';
+import 'dart:io';
+
 import 'package:apyar_app/app/core/models/apyar.dart';
 import 'package:apyar_app/app/core/models/apyar_content.dart';
 import 'package:apyar_app/app/core/models/bookmark.dart';
 import 'package:apyar_app/app/core/providers/apyar_provider.dart';
 import 'package:apyar_app/app/core/providers/bookmark_provider.dart';
+import 'package:apyar_app/app/ui/database_manager/database_services.dart';
 import 'package:apyar_app/more_libs/setting/core/path_util.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -55,7 +57,15 @@ void main() async {
   );
   // db
   final db = TDB.getInstance();
-  await db.open(getLocalDatabasePath());
+  try {
+    await db.open(DatabaseServices.getLocalDatabasePath());
+  } catch (e) {
+    final file = File(DatabaseServices.getLocalDatabasePath());
+    if (file.existsSync()) {
+      await file.delete();
+      await db.open(DatabaseServices.getLocalDatabasePath());
+    }
+  }
   db.setAdapter<Apyar>(ApyarAdapter());
   db.setAdapter<ApyarContent>(ApyarContentAdapter());
   db.setAdapter<Bookmark>(BookmarkAdapter());

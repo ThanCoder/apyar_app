@@ -27,6 +27,8 @@ class _ContentScreenState extends State<ContentScreen> {
   @override
   void dispose() {
     ThanPkg.platform.toggleFullScreen(isFullScreen: false);
+    ThanPkg.platform.toggleKeepScreen(isKeep: false);
+    scrollController.dispose();
     super.dispose();
   }
 
@@ -34,9 +36,11 @@ class _ContentScreenState extends State<ContentScreen> {
   bool isFullscreen = false;
   ApyarContent? content;
   List<String> textList = [];
+  final scrollController = ScrollController();
 
   void init() async {
     try {
+      ThanPkg.platform.toggleKeepScreen(isKeep: true);
       setState(() {
         isLoading = true;
       });
@@ -44,7 +48,7 @@ class _ContentScreenState extends State<ContentScreen> {
         (value) => value.apyarId == widget.apyar.autoId,
       );
       if (content != null) {
-        textList.addAll(content!.body.split('\n\n'));
+        textList.addAll(content!.body.split('\n'));
       }
 
       if (!mounted) return;
@@ -63,12 +67,13 @@ class _ContentScreenState extends State<ContentScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: isLoading
-          ? Center(child: TLoader.random())
-          : GestureDetector(
-              onDoubleTap: _toggleFullscreen,
-              child: CustomScrollView(slivers: [_getAppbar(), _getContent()]),
-            ),
+      body: GestureDetector(
+        onDoubleTap: _toggleFullscreen,
+        child: CustomScrollView(
+          controller: scrollController,
+          slivers: [_getAppbar(), _getContent()],
+        ),
+      ),
     );
   }
 
@@ -77,7 +82,7 @@ class _ContentScreenState extends State<ContentScreen> {
       return SliverToBoxAdapter();
     }
     return SliverAppBar(
-      title: Text(widget.apyar.title),
+      title: Text(widget.apyar.title, style: TextStyle(fontSize: 14)),
       snap: true,
       floating: true,
       pinned: false,
@@ -86,6 +91,9 @@ class _ContentScreenState extends State<ContentScreen> {
   }
 
   Widget _getContent() {
+    if (isLoading) {
+      return SliverFillRemaining(child: Center(child: TLoader.random()));
+    }
     if (content == null) {
       return SliverFillRemaining(
         child: Center(child: Text('Content မရှိပါ!...')),
