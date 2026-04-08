@@ -16,14 +16,20 @@ class CacheImage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return CachedNetworkImage(
-      imageUrl: url,
-      fit: fit,
-      // placeholder: (context, url) => Text('placeholder'),
-      errorWidget: (context, url, error) =>
-          Center(child: Text('Error: `$url`')),
-      progressIndicatorBuilder: (context, url, progress) => TLoader.random(),
-    );
+    return TCacheImage(url: url, fit: fit ?? BoxFit.contain);
+    // return CachedNetworkImage(
+    //   imageUrl: url,
+    //   fit: fit,
+    //   errorWidget: (context, url, error) =>
+    //       Center(child: Text('Error: `$url`')),
+    //   progressIndicatorBuilder: (context, url, progress) => Center(
+    //     child: SizedBox(
+    //       width: 70,
+    //       height: 70,
+    //       child: CircularProgressIndicator(value: progress.progress),
+    //     ),
+    //   ),
+    // );
   }
 }
 

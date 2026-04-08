@@ -8,9 +8,11 @@ import 'package:apyar_app/core/providers/apyar_provider.dart';
 import 'package:apyar_app/core/providers/bookmark_provider.dart';
 import 'package:apyar_app/app/ui/database_manager/database_services.dart';
 import 'package:apyar_app/more_libs/setting/core/path_util.dart';
+import 'package:dart_core_extensions/dart_core_extensions.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:provider/provider.dart';
+import 'package:t_client/t_client.dart';
 import 'package:t_db/t_db.dart';
 import 'package:t_widgets/t_widgets.dart';
 import 'package:than_pkg/than_pkg.dart';
@@ -28,9 +30,17 @@ void main() async {
       showTSnackBar(context, message);
     },
   );
+  final client = TClient();
+
   await TWidgets.instance.init(
     defaultImageAssetsPath: 'assets/apyar_log_3.jpg',
     isDarkTheme: () => Setting.getAppConfig.isDarkTheme,
+    onDownloadImage: (url, savePath) async {
+      await client.download(url, savePath: savePath);
+    },
+    getCachePath: (url) => PathUtil.getCachePath(
+      name: StringPathExtensions(url.getCleanBackSlash).getName(),
+    ),
   );
 
   if (TPlatform.isDesktop) {

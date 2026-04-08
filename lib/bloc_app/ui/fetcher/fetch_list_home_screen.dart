@@ -117,10 +117,7 @@ class _FetchListHomeScreenState extends State<FetchListHomeScreen> {
       child: Stack(
         children: [
           Positioned.fill(
-            child: CacheImage(
-              url: item.coverUrl,
-              fit: BoxFit.cover,
-            ),
+            child: CacheImage(url: item.coverUrl, fit: BoxFit.cover),
           ),
           Positioned(
             bottom: 0,
@@ -150,8 +147,9 @@ class _FetchListHomeScreenState extends State<FetchListHomeScreen> {
 
   Widget _pagiList() {
     return SliverToBoxAdapter(
-      child: Padding(
+      child: Container(
         padding: const EdgeInsets.all(8.0),
+        margin: EdgeInsets.symmetric(vertical: 10),
         child: Center(
           child: Wrap(
             children: List.generate(
@@ -169,7 +167,7 @@ class _FetchListHomeScreenState extends State<FetchListHomeScreen> {
       mouseCursor: SystemMouseCursors.click,
       onTap: () => init(item.url),
       child: Container(
-        padding: EdgeInsets.all(3),
+        padding: EdgeInsets.all(5),
         margin: EdgeInsets.only(right: 3),
         decoration: BoxDecoration(
           color: Colors.black,

@@ -22,8 +22,16 @@ class _FetchItemDetailScreenState extends State<FetchItemDetailScreen> {
     WidgetsBinding.instance.addPostFrameCallback((_) => init());
   }
 
+  @override
+  void dispose() {
+    ThanPkg.platform.toggleFullScreen(isFullScreen: false);
+    super.dispose();
+  }
+
   FetchItemResponse? response;
   bool isLoading = false;
+  bool isFullScreen = false;
+
   Future<void> init({bool usedCache = true}) async {
     try {
       setState(() {
@@ -52,48 +60,57 @@ class _FetchItemDetailScreenState extends State<FetchItemDetailScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text(widget.item.title),
-        actions: [
-          if (TPlatform.isDesktop)
-            IconButton(
-              onPressed: () => init(usedCache: false),
-              icon: Icon(Icons.refresh),
+      appBar: isFullScreen
+          ? null
+          : AppBar(
+              title: Text(widget.item.title),
+              actions: [
+                if (TPlatform.isDesktop)
+                  IconButton(
+                    onPressed: () => init(usedCache: false),
+                    icon: Icon(Icons.refresh),
+                  ),
+                if (response != null)
+                  FetchItemResponseBookmarkToggler(item: response!),
+              ],
             ),
-          if (response != null)
-            FetchItemResponseBookmarkToggler(item: response!),
-        ],
-      ),
       body: RefreshIndicator.noSpinner(
         onRefresh: () => init(usedCache: false),
-        child: CustomScrollView(
-          slivers: [
-            if (isLoading)
-              SliverFillRemaining(child: Center(child: TLoaderRandom())),
-            if (response == null)
-              SliverFillRemaining(
-                child: Center(
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Text('List Empty'),
-                      IconButton(
-                        onPressed: () => init(),
-                        icon: Icon(Icons.refresh),
-                      ),
-                    ],
+        child: GestureDetector(
+          onDoubleTap: () {
+            isFullScreen = !isFullScreen;
+            ThanPkg.platform.toggleFullScreen(isFullScreen: isFullScreen);
+            setState(() {});
+          },
+          child: CustomScrollView(
+            slivers: [
+              if (isLoading)
+                SliverFillRemaining(child: Center(child: TLoaderRandom())),
+              if (response == null)
+                SliverFillRemaining(
+                  child: Center(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Text('List Empty'),
+                        IconButton(
+                          onPressed: () => init(),
+                          icon: Icon(Icons.refresh),
+                        ),
+                      ],
+                    ),
+                  ),
+                )
+              else
+                SliverList.builder(
+                  itemCount: response!.list.length,
+                  itemBuilder: (context, index) => Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: _listItem(response!.list[index]),
                   ),
                 ),
-              )
-            else
-              SliverList.builder(
-                itemCount: response!.list.length,
-                itemBuilder: (context, index) => Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: _listItem(response!.list[index]),
-                ),
-              ),
-          ],
+            ],
+          ),
         ),
       ),
     );
