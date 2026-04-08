@@ -1,13 +1,15 @@
 import 'dart:io';
 
-import 'package:apyar_app/app/core/models/apyar.dart';
-import 'package:apyar_app/app/core/models/apyar_content.dart';
-import 'package:apyar_app/app/core/models/bookmark.dart';
-import 'package:apyar_app/app/core/providers/apyar_provider.dart';
-import 'package:apyar_app/app/core/providers/bookmark_provider.dart';
+import 'package:apyar_app/bloc_app/cubits/fetch_item_response_cubit.dart';
+import 'package:apyar_app/core/models/apyar.dart';
+import 'package:apyar_app/core/models/apyar_content.dart';
+import 'package:apyar_app/core/models/bookmark.dart';
+import 'package:apyar_app/core/providers/apyar_provider.dart';
+import 'package:apyar_app/core/providers/bookmark_provider.dart';
 import 'package:apyar_app/app/ui/database_manager/database_services.dart';
 import 'package:apyar_app/more_libs/setting/core/path_util.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:provider/provider.dart';
 import 'package:t_db/t_db.dart';
 import 'package:t_widgets/t_widgets.dart';
@@ -76,7 +78,12 @@ void main() async {
         ChangeNotifierProvider(create: (context) => ApyarProvider()),
         ChangeNotifierProvider(create: (context) => BookmarkProvider()),
       ],
-      child: const MyApp(),
+      child: MultiBlocProvider(
+        providers: [
+          BlocProvider(create: (context) => FetchItemResponseCubit()..init()),
+        ],
+        child: const MyApp(),
+      ),
     ),
   );
 }

@@ -1,4 +1,4 @@
-import 'package:apyar_app/app/core/models/apyar.dart';
+import 'package:apyar_app/core/models/apyar.dart';
 
 extension ApyarExtensions on List<Apyar> {
   void sortTitle({bool isAToZ = true}) {

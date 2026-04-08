@@ -1,4 +1,4 @@
-import 'package:apyar_app/app/core/models/bookmark.dart';
+import 'package:apyar_app/core/models/bookmark.dart';
 import 'package:flutter/material.dart';
 import 'package:t_db/t_db.dart';
 

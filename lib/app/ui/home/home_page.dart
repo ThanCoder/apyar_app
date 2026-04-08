@@ -1,5 +1,5 @@
-import 'package:apyar_app/app/core/models/apyar.dart';
-import 'package:apyar_app/app/core/providers/apyar_provider.dart';
+import 'package:apyar_app/core/models/apyar.dart';
+import 'package:apyar_app/core/providers/apyar_provider.dart';
 import 'package:apyar_app/app/routes.dart';
 import 'package:apyar_app/app/ui/components/bookmark_toggle_widget.dart';
 import 'package:apyar_app/app/ui/content/content_screen.dart';

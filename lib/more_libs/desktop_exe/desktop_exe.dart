@@ -1,6 +1,8 @@
 import 'dart:io';
 
-import 'package:flutter/widgets.dart';
+import 'package:flutter/material.dart';
+import 'package:t_widgets/t_widgets.dart';
+import 'package:apyar_app/more_libs/setting/setting.dart';
 /* 
   [Desktop Entry]
   Version=1.0
@@ -15,6 +17,39 @@ import 'package:flutter/widgets.dart';
   */
 
 class DesktopExe {
+  static Widget createDesktopListTile(
+    BuildContext context, {
+    required String assetsIconPath,
+  }) {
+    if (!Platform.isLinux) {
+      return SizedBox.shrink();
+    }
+    return Column(
+      children: [
+        Divider(),
+        Card(
+          child: ListTile(
+            title: Text('Make Desktop Icon'),
+            onTap: () async {
+              try {
+                await exportDesktopIcon(
+                  name: Setting.instance.appName,
+                  assetsIconPath: assetsIconPath,
+                );
+
+                if (!context.mounted) return;
+                showTSnackBar(context, 'Created Desktop Icon');
+              } catch (e) {
+                if (!context.mounted) return;
+                showTMessageDialogError(context, e.toString());
+              }
+            },
+          ),
+        ),
+      ],
+    );
+  }
+
   static Future<void> exportDesktopIcon({
     required String name,
     required String assetsIconPath,
@@ -36,8 +71,6 @@ class DesktopExe {
 
       // write content
       final file = File(desktopFilePath);
-      // file ရှိနေရင် မထုတ်တော့ဘူး
-      if (file.existsSync()) return;
 
       final stringBuff = StringBuffer();
       stringBuff.writeln('[Desktop Entry]');

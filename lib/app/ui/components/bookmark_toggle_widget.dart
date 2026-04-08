@@ -1,7 +1,7 @@
 import 'dart:async';
 
-import 'package:apyar_app/app/core/models/apyar.dart';
-import 'package:apyar_app/app/core/models/bookmark.dart';
+import 'package:apyar_app/core/models/apyar.dart';
+import 'package:apyar_app/core/models/bookmark.dart';
 import 'package:flutter/material.dart';
 import 'package:t_db/t_db.dart';
 import 'package:t_widgets/t_widgets.dart';

@@ -5,8 +5,11 @@ import 'package:than_pkg/than_pkg.dart';
 import '../setting.dart';
 
 class PathUtil {
+  ///
+  /// `assets/thancoder_logo.png`
+  ///
   static Future<String> getAssetRealPathPath(String rootPath) async {
-    final bytes = await rootBundle.load(pathJoin('assets', rootPath));
+    final bytes = await rootBundle.load(rootPath);
     final name = rootPath.getName();
     final cacheFile = File(PathUtil.getCachePath(name: name));
     if (!cacheFile.existsSync()) {
@@ -175,4 +178,3 @@ class PathUtil {
     }
   }
 }
-

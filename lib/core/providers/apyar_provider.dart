@@ -1,5 +1,5 @@
-import 'package:apyar_app/app/core/extensions/apyar_extensions.dart';
-import 'package:apyar_app/app/core/models/apyar.dart';
+import 'package:apyar_app/core/extensions/apyar_extensions.dart';
+import 'package:apyar_app/core/models/apyar.dart';
 import 'package:flutter/material.dart';
 import 'package:t_db/t_db.dart';
 import 'package:t_widgets/t_widgets.dart';

@@ -1,6 +1,6 @@
-import 'package:apyar_app/app/core/models/apyar.dart';
-import 'package:apyar_app/app/core/models/bookmark.dart';
-import 'package:apyar_app/app/core/providers/bookmark_provider.dart';
+import 'package:apyar_app/core/models/apyar.dart';
+import 'package:apyar_app/core/models/bookmark.dart';
+import 'package:apyar_app/core/providers/bookmark_provider.dart';
 import 'package:apyar_app/app/routes.dart';
 import 'package:apyar_app/app/ui/content/content_screen.dart';
 import 'package:flutter/material.dart';

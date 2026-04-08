@@ -1,6 +1,6 @@
 import 'dart:io';
 
-import 'package:apyar_app/app/core/providers/apyar_provider.dart';
+import 'package:apyar_app/core/providers/apyar_provider.dart';
 import 'package:apyar_app/app/ui/database_manager/add_local_database_list_tile.dart';
 import 'package:apyar_app/app/ui/database_manager/database_services.dart';
 import 'package:apyar_app/app/ui/database_manager/download_database_list_tile.dart';
