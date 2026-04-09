@@ -1,4 +1,5 @@
 import 'package:apyar_app/bloc_app/ui/fetcher/fetch_item_detail_screen.dart';
+import 'package:apyar_app/bloc_app/ui/fetcher/fetch_item_response_bookmark_toggler.dart';
 import 'package:apyar_app/bloc_app/ui/fetcher/fetcher_services.dart';
 import 'package:apyar_app/bloc_app/ui/fetcher/fetcher_types.dart';
 import 'package:apyar_app/components/cache_image.dart';
@@ -24,8 +25,11 @@ class _FetchListHomeScreenState extends State<FetchListHomeScreen> {
 
   FetchListResponse? response;
   bool isLoading = false;
+  String? currentUrl;
+
   Future<void> init(String url, {bool usedCache = true}) async {
     try {
+      response = null;
       setState(() {
         isLoading = true;
       });
@@ -35,6 +39,9 @@ class _FetchListHomeScreenState extends State<FetchListHomeScreen> {
         hostUrl: widget.url,
         usedCache: usedCache,
       );
+      // await Future.delayed(Duration(seconds: 2));
+      currentUrl = url;
+
       if (!mounted) return;
       setState(() {
         isLoading = false;
@@ -56,19 +63,19 @@ class _FetchListHomeScreenState extends State<FetchListHomeScreen> {
         actions: [
           if (TPlatform.isDesktop)
             IconButton(
-              onPressed: () => init(widget.url, usedCache: false),
+              onPressed: () => init(currentUrl ?? widget.url, usedCache: false),
               icon: Icon(Icons.refresh),
             ),
         ],
       ),
       body: RefreshIndicator.noSpinner(
-        onRefresh: () => init(widget.url, usedCache: false),
+        onRefresh: () => init(currentUrl ?? widget.url, usedCache: false),
         child: CustomScrollView(
           slivers: [
             if (isLoading)
               SliverFillRemaining(child: Center(child: TLoaderRandom())),
 
-            if (response == null)
+            if (response != null && response!.items.isEmpty)
               SliverFillRemaining(
                 child: Center(
                   child: Column(
@@ -82,9 +89,9 @@ class _FetchListHomeScreenState extends State<FetchListHomeScreen> {
                     ],
                   ),
                 ),
-              )
-            else
-              _result(),
+              ),
+            // result
+            if (response != null) _result(),
 
             if (response != null) _pagiList(),
           ],
@@ -145,6 +152,7 @@ class _FetchListHomeScreenState extends State<FetchListHomeScreen> {
     );
   }
 
+  // pagination
   Widget _pagiList() {
     return SliverToBoxAdapter(
       child: Container(
@@ -152,6 +160,8 @@ class _FetchListHomeScreenState extends State<FetchListHomeScreen> {
         margin: EdgeInsets.symmetric(vertical: 10),
         child: Center(
           child: Wrap(
+            spacing: 2,
+            runSpacing: 2,
             children: List.generate(
               response!.pagiList.length,
               (index) => _pagiItem(response!.pagiList[index]),
@@ -170,12 +180,15 @@ class _FetchListHomeScreenState extends State<FetchListHomeScreen> {
         padding: EdgeInsets.all(5),
         margin: EdgeInsets.only(right: 3),
         decoration: BoxDecoration(
-          color: Colors.black,
+          color: item.active ? Colors.blue : Colors.black,
           borderRadius: BorderRadius.circular(4),
         ),
         child: Text(
           item.title,
-          style: TextStyle(color: Colors.blue, fontSize: 16),
+          style: TextStyle(
+            color: item.active ? Colors.white : Colors.blue,
+            fontSize: 16,
+          ),
         ),
       ),
     );

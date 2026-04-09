@@ -1,6 +1,8 @@
 import 'package:apyar_app/bloc_app/ui/fetcher/fetch_item_response_bookmark_toggler.dart';
 import 'package:apyar_app/bloc_app/ui/fetcher/fetcher_types.dart';
 import 'package:apyar_app/components/cache_image.dart';
+import 'package:apyar_app/core/extensions/buildcontext_extensions.dart';
+import 'package:apyar_app/more_libs/setting/core/rabbit.dart';
 import 'package:flutter/material.dart';
 import 'package:t_widgets/t_widgets.dart';
 import 'package:than_pkg/than_pkg.dart';
@@ -34,10 +36,9 @@ class _FetchItemDetailScreenState extends State<FetchItemDetailScreen> {
 
   Future<void> init({bool usedCache = true}) async {
     try {
-      setState(() {
-        isLoading = true;
-      });
       response = null;
+      isLoading = true;
+      setState(() {});
 
       response = await FetcherServices.instance.fetchItemDetail(
         widget.item,
@@ -72,6 +73,8 @@ class _FetchItemDetailScreenState extends State<FetchItemDetailScreen> {
                   ),
                 if (response != null)
                   FetchItemResponseBookmarkToggler(item: response!),
+
+                IconButton(onPressed: _showMenu, icon: Icon(Icons.more_vert)),
               ],
             ),
       body: RefreshIndicator.noSpinner(
@@ -86,7 +89,8 @@ class _FetchItemDetailScreenState extends State<FetchItemDetailScreen> {
             slivers: [
               if (isLoading)
                 SliverFillRemaining(child: Center(child: TLoaderRandom())),
-              if (response == null)
+
+              if (response != null && response!.list.isEmpty)
                 SliverFillRemaining(
                   child: Center(
                     child: Column(
@@ -100,8 +104,8 @@ class _FetchItemDetailScreenState extends State<FetchItemDetailScreen> {
                       ],
                     ),
                   ),
-                )
-              else
+                ),
+              if (response != null)
                 SliverList.builder(
                   itemCount: response!.list.length,
                   itemBuilder: (context, index) => Padding(
@@ -125,5 +129,66 @@ class _FetchItemDetailScreenState extends State<FetchItemDetailScreen> {
       );
     }
     return Text(item.result, style: TextStyle(fontSize: 18));
+  }
+
+  void _showMenu() {
+    showTMenuBottomSheet(
+      context,
+      children: [
+        ListTile(
+          leading: Icon(Icons.copy),
+          title: Text('Copy Web Url'),
+          onTap: () {
+            context.closeNavi();
+            ThanPkg.appUtil.copyText(widget.item.url);
+          },
+        ),
+        if (response != null)
+          ListTile(
+            leading: Icon(Icons.copy_all),
+            title: Text('Copy Text Content'),
+            onTap: () {
+              context.closeNavi();
+              ThanPkg.appUtil.copyText(
+                response!.list.map((e) => e.result).join('\n'),
+              );
+            },
+          ),
+        if (response != null)
+          ListTile(
+            leading: Icon(Icons.font_download_outlined),
+            title: Text('Convert Zawgyi Font'),
+            onTap: () {
+              context.closeNavi();
+              final list = response!.list.map((e) {
+                if (e.type == FetchItemReturnDataType.text) {
+                  return e.copyWith(result: Rabbit.uni2zg(e.result));
+                }
+                return e;
+              }).toList();
+              setState(() {
+                response = response!.copyWith(list: list);
+              });
+            },
+          ),
+        if (response != null)
+          ListTile(
+            leading: Icon(Icons.font_download_outlined),
+            title: Text('Convert Pyidaungsu Font'),
+            onTap: () {
+              context.closeNavi();
+              final list = response!.list.map((e) {
+                if (e.type == FetchItemReturnDataType.text) {
+                  return e.copyWith(result: Rabbit.zg2uni(e.result));
+                }
+                return e;
+              }).toList();
+              setState(() {
+                response = response!.copyWith(list: list);
+              });
+            },
+          ),
+      ],
+    );
   }
 }

@@ -40,7 +40,7 @@ class FetcherServices {
         ),
       ],
     );
-    final pagi = DomSelector.getResultList(
+    final pagiResultList = DomSelector.getResultList(
       html,
       selectorAll: '.pagination .page-item',
       queries: [
@@ -48,6 +48,7 @@ class FetcherServices {
         DomSingleQuery(
           (ele) => ele.getQuerySelectorAttr(selector: 'a', attr: 'href'),
         ),
+        DomSingleQuery((ele) => ele.className),
       ],
     );
     final items = list.map((e) {
@@ -64,12 +65,19 @@ class FetcherServices {
         hostUrl: hostUrl,
       );
     }).toList();
-    final pagiList = pagi.map((e) {
-      final pageUrl = e[1].startsWith('/')
-          ? ('$hostUrl/${e[1]}').getNormalizeSlash.replaceAll(':/', '://')
-          : e[1];
-      return FetchListPagiItem(title: e[0], url: pageUrl);
-    }).toList();
+    final pagiList = <FetchListPagiItem>[];
+
+    for (var pagi in pagiResultList) {
+      if (pagi[0].isEmpty) continue;
+
+      final pageUrl = pagi[1].startsWith('/')
+          ? ('$hostUrl/${pagi[1]}').getNormalizeSlash.replaceAll(':/', '://')
+          : pagi[1];
+      bool active = pagi[2].contains('active');
+      pagiList.add(
+        FetchListPagiItem(title: pagi[0], url: pageUrl, active: active),
+      );
+    }
 
     return FetchListResponse(items: items, pagiList: pagiList);
   }

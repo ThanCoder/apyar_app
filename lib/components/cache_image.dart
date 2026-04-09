@@ -1,5 +1,4 @@
 import 'package:apyar_app/more_libs/setting/core/path_util.dart';
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:t_widgets/t_widgets.dart';
 import 'package:than_pkg/than_pkg.dart';

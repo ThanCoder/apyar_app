@@ -20,6 +20,16 @@ class FetchItemResponse {
       ),
     );
   }
+
+  FetchItemResponse copyWith({
+    FetchListItem? item,
+    List<FetchItemReturnData>? list,
+  }) {
+    return FetchItemResponse(
+      item: item ?? this.item,
+      list: list ?? this.list,
+    );
+  }
 }
 
 class FetchItemReturnData {
@@ -41,6 +51,16 @@ class FetchItemReturnData {
       type: FetchItemReturnDataType.values.firstWhere(
         (e) => e.name == json['type'],
       ),
+    );
+  }
+
+  FetchItemReturnData copyWith({
+    String? result,
+    FetchItemReturnDataType? type,
+  }) {
+    return FetchItemReturnData(
+      result: result ?? this.result,
+      type: type ?? this.type,
     );
   }
 }
@@ -90,6 +110,11 @@ class FetchListItem {
 class FetchListPagiItem {
   final String title;
   final String url;
+  final bool active;
 
-  const FetchListPagiItem({required this.title, required this.url});
+  const FetchListPagiItem({
+    required this.title,
+    required this.url,
+    this.active = false,
+  });
 }
