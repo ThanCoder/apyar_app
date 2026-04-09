@@ -1,12 +1,11 @@
-import 'dart:io';
-
+import 'package:apyar_app/bloc_app/cubits/apyar_bookmark_list_cubit.dart';
+import 'package:apyar_app/bloc_app/cubits/apyar_list_cubit.dart';
 import 'package:apyar_app/bloc_app/cubits/fetch_item_response_cubit.dart';
 import 'package:apyar_app/core/models/apyar.dart';
 import 'package:apyar_app/core/models/apyar_content.dart';
 import 'package:apyar_app/core/models/bookmark.dart';
 import 'package:apyar_app/core/providers/apyar_provider.dart';
 import 'package:apyar_app/core/providers/bookmark_provider.dart';
-import 'package:apyar_app/app/ui/database_manager/database_services.dart';
 import 'package:apyar_app/more_libs/setting/core/path_util.dart';
 import 'package:dart_core_extensions/dart_core_extensions.dart';
 import 'package:flutter/material.dart';
@@ -69,15 +68,6 @@ void main() async {
   );
   // db
   final db = TDB.getInstance();
-  try {
-    await db.open(DatabaseServices.getLocalDatabasePath());
-  } catch (e) {
-    final file = File(DatabaseServices.getLocalDatabasePath());
-    if (file.existsSync()) {
-      await file.delete();
-      await db.open(DatabaseServices.getLocalDatabasePath());
-    }
-  }
   db.setAdapter<Apyar>(ApyarAdapter());
   db.setAdapter<ApyarContent>(ApyarContentAdapter());
   db.setAdapter<Bookmark>(BookmarkAdapter());
@@ -91,6 +81,8 @@ void main() async {
       child: MultiBlocProvider(
         providers: [
           BlocProvider(create: (context) => FetchItemResponseCubit()..init()),
+          BlocProvider(create: (context) => ApyarListCubit()),
+          BlocProvider(create: (context) => ApyarBookmarkListCubit()),
         ],
         child: const MyApp(),
       ),

@@ -1,13 +1,12 @@
 import 'package:apyar_app/core/models/apyar.dart';
 import 'package:apyar_app/core/models/apyar_content.dart';
 import 'package:apyar_app/app/ui/components/bookmark_toggle_widget.dart';
+import 'package:apyar_app/core/services/apyar_services.dart';
 import 'package:flutter/material.dart';
-import 'package:t_db/t_db.dart';
 import 'package:t_widgets/functions/message_func.dart';
 import 'package:t_widgets/widgets/index.dart';
 import 'package:than_pkg/than_pkg.dart';
 
-final _box = TDB.getInstance().getBox<ApyarContent>();
 
 class ContentScreen extends StatefulWidget {
   final Apyar apyar;
@@ -41,12 +40,15 @@ class _ContentScreenState extends State<ContentScreen> {
   void init() async {
     try {
       ThanPkg.platform.toggleKeepScreen(isKeep: true);
+
       setState(() {
+        content = null;
         isLoading = true;
       });
-      content = await _box.getOne(
-        (value) => value.apyarId == widget.apyar.autoId,
+      content = await ApyarServices.instance.getContentByApyarId(
+        widget.apyar.autoId,
       );
+
       if (content != null) {
         textList.addAll(content!.body.split('\n'));
       }

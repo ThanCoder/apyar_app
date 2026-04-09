@@ -27,4 +27,16 @@ class DatabaseServices {
     // print('isDataRecordCreatedExists: ${db.isDataRecordCreatedExists}');
     return db.isDataRecordCreatedExists;
   }
+
+  static Future<void> deleteAllDB() async {
+    if (dbFile().existsSync()) {
+      await dbFile().delete();
+    }
+    if (dbLockFile().existsSync()) {
+      await dbLockFile().delete();
+    }
+  }
+
+  static File dbFile() => File(getLocalDatabasePath());
+  static File dbLockFile() => File('${dbFile().path}.lock');
 }

@@ -1,113 +1,31 @@
-import 'dart:async';
-
+import 'package:apyar_app/bloc_app/cubits/apyar_bookmark_list_cubit.dart';
 import 'package:apyar_app/core/models/apyar.dart';
-import 'package:apyar_app/core/models/bookmark.dart';
 import 'package:flutter/material.dart';
-import 'package:t_db/t_db.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:t_widgets/t_widgets.dart';
 
-final _box = TDB.getInstance().getBox<Bookmark>();
-
-class BookmarkToggleWidget extends StatefulWidget {
+class BookmarkToggleWidget extends StatelessWidget {
   final Apyar apyar;
   const BookmarkToggleWidget({super.key, required this.apyar});
 
   @override
-  State<BookmarkToggleWidget> createState() => _BookmarkToggleWidgetState();
-}
-
-class _BookmarkToggleWidgetState extends State<BookmarkToggleWidget> {
-  late StreamSubscription<TDBoxStreamEvent> _subscription;
-
-  @override
-  void initState() {
-    // WidgetsBinding.instance.addPostFrameCallback((_) => init());
-    _subscription = _box.stream.listen((data) {
-      if (!mounted || data.id == null) return;
-      if (data.type == TBEventType.update) return;
-      // add ဆိုရင် စစ်ဆေးတော့မယ်
-      if (data.type == TBEventType.add) {
-        init();
-        return;
-      }
-      // bookmark id တူလားစစ်မယ်
-      if (bookmark != null &&
-          data.type == TBEventType.delete &&
-          bookmark!.autoId == data.id) {
-        bookmark = null;
-        setState(() {});
-      }
-    });
-    init();
-    super.initState();
-  }
-
-  @override
-  void dispose() {
-    _subscription.cancel();
-    super.dispose();
-  }
-
-  @override
-  void didUpdateWidget(covariant BookmarkToggleWidget oldWidget) {
-    if (oldWidget.apyar.autoId != widget.apyar.autoId) {
-      init();
-    }
-    super.didUpdateWidget(oldWidget);
-  }
-
-  Bookmark? bookmark;
-  bool isLoading = false;
-  void init() async {
-    try {
-      setState(() {
-        isLoading = true;
-      });
-      bookmark = null;
-      bookmark = await _box.getOne(
-        (value) => value.apyarId == widget.apyar.autoId,
-      );
-
-      if (!mounted) return;
-      setState(() {
-        isLoading = false;
-      });
-    } catch (e) {
-      debugPrint('[]: $e');
-      if (!mounted) return;
-      setState(() {
-        isLoading = false;
-      });
-    }
-  }
-
-  @override
   Widget build(BuildContext context) {
-    if (isLoading) {
-      return SizedBox(width: 25, height: 25, child: TLoader(size: 25));
-    }
-    return IconButton(
-      onPressed: () async {
-        if (bookmark == null) {
-          final newBook = Bookmark(
-            apyarId: widget.apyar.autoId,
-            title: widget.apyar.title,
-            date: DateTime.now(),
-          );
-          await _box.add(newBook);
-          bookmark = newBook;
-        } else {
-          if (bookmark == null) return;
-          await _box.deleteById(bookmark!.autoId);
-          bookmark = null;
+    return BlocBuilder<ApyarBookmarkListCubit, ApyarBookmarkListCubitState>(
+      builder: (context, state) {
+        if (state.isLoading) {
+          return SizedBox(width: 25, height: 25, child: TLoader(size: 25));
         }
-        if (!mounted) return;
-        setState(() {});
+        final exists = context.read<ApyarBookmarkListCubit>().exists(apyar);
+        return IconButton(
+          onPressed: () {
+            context.read<ApyarBookmarkListCubit>().toggle(apyar);
+          },
+          icon: Icon(
+            color: exists ? Colors.red : Colors.blue,
+            exists ? Icons.bookmark_remove : Icons.bookmark_add,
+          ),
+        );
       },
-      icon: Icon(
-        color: bookmark == null ? Colors.blue : Colors.red,
-        bookmark == null ? Icons.bookmark_add : Icons.bookmark_remove,
-      ),
     );
   }
 }

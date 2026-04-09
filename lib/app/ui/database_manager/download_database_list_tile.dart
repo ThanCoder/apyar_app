@@ -1,16 +1,14 @@
 import 'dart:async';
-import 'dart:io';
 
 import 'package:apyar_app/app/ui/database_manager/database_services.dart';
-import 'package:apyar_app/app/ui/database_manager/database_manager_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:t_client/t_client.dart';
-import 'package:t_db/t_db.dart';
 import 'package:t_widgets/t_widgets.dart';
 import 'package:than_pkg/than_pkg.dart';
 
 class DownloadDatabaseListTile extends StatefulWidget {
-  const DownloadDatabaseListTile({super.key});
+  final void Function() onCheckDB;
+  const DownloadDatabaseListTile({super.key, required this.onCheckDB});
 
   @override
   State<DownloadDatabaseListTile> createState() =>
@@ -50,14 +48,8 @@ class _DownloadDatabaseListTileState extends State<DownloadDatabaseListTile> {
   }
 
   void _download() async {
-    final dbFile = File(DatabaseServices.getLocalDatabasePath());
-    final dbLockFile = File('${DatabaseServices.getLocalDatabasePath()}.lock');
-    if (dbFile.existsSync()) {
-      await dbFile.delete();
-    }
-    if (dbLockFile.existsSync()) {
-      await dbLockFile.delete();
-    }
+    await DatabaseServices.deleteAllDB();
+
     if (!mounted) return;
     showDialog(
       context: context,
@@ -67,18 +59,8 @@ class _DownloadDatabaseListTileState extends State<DownloadDatabaseListTile> {
         urls: [
           'https://github.com/ThanCoder/apyar_app/releases/download/database.v1/apyar.v1.db',
         ],
-        onSuccess: () async {
-          try {
-            await TDB.getInstance().restart();
-            if (!mounted) return;
-            setState(() {});
-            databaseManagerScreenStateNotifier.value =
-                !databaseManagerScreenStateNotifier.value;
-          } catch (e) {
-            if (!context.mounted) return;
-            showTMessageDialogError(context, e.toString());
-          }
-        },
+        onSuccess: widget.onCheckDB,
+        onError: (message) => widget.onCheckDB(),
       ),
     );
   }

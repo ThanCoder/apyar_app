@@ -1,16 +1,12 @@
-import 'dart:io';
-
-import 'package:apyar_app/core/providers/apyar_provider.dart';
 import 'package:apyar_app/app/ui/database_manager/add_local_database_list_tile.dart';
 import 'package:apyar_app/app/ui/database_manager/database_services.dart';
 import 'package:apyar_app/app/ui/database_manager/download_database_list_tile.dart';
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
-import 'package:t_db/t_db.dart';
+
 import 'package:t_widgets/functions/index.dart';
 import 'package:t_widgets/widgets/index.dart';
 
-final databaseManagerScreenStateNotifier = ValueNotifier<bool>(false);
+import 'export_database_list_tile.dart';
 
 class DatabaseManagerScreen extends StatefulWidget {
   const DatabaseManagerScreen({super.key});
@@ -21,25 +17,52 @@ class DatabaseManagerScreen extends StatefulWidget {
 
 class _DatabaseManagerScreenState extends State<DatabaseManagerScreen> {
   @override
+  void initState() {
+    super.initState();
+    // WidgetsBinding.instance.addPostFrameCallback((_) => init());
+    init();
+  }
+
+  bool isLoading = false;
+  bool existsDB = false;
+  Future<void> init() async {
+    try {
+      setState(() {
+        isLoading = true;
+        existsDB = false;
+      });
+      if (DatabaseServices.isLocalDatabaseExists()) {
+        existsDB = true;
+      }
+      setState(() {
+        isLoading = false;
+      });
+    } catch (e) {
+      if (!mounted) return;
+      setState(() {
+        isLoading = false;
+      });
+      showTMessageDialogError(context, e.toString());
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: Text('Database Manager')),
-      body: ValueListenableBuilder(
-        valueListenable: databaseManagerScreenStateNotifier,
-        builder: (context, value, child) {
-          return Stack(
-            children: [
-              Positioned.fill(
-                child: TScrollableColumn(
-                  children: [_statusWidget(), Divider(), _actionWiget()],
+      body: isLoading
+          ? Center(child: TLoaderRandom())
+          : Stack(
+              children: [
+                Positioned.fill(
+                  child: TScrollableColumn(
+                    children: [_statusWidget(), Divider(), _actionWiget()],
+                  ),
                 ),
-              ),
-              // button
-              Positioned(bottom: 0, right: 0, child: _nextBtn()),
-            ],
-          );
-        },
-      ),
+                // button
+                // Positioned(bottom: 0, right: 0, child: _nextBtn()),
+              ],
+            ),
     );
   }
 
@@ -65,57 +88,47 @@ class _DatabaseManagerScreenState extends State<DatabaseManagerScreen> {
     return FutureBuilder(
       future: DatabaseServices.isDatabaseRecordExists(),
       builder: (context, snapshot) {
+        final existsDB = snapshot.data ?? false;
         return Column(
           children: [
             Text(
-              (snapshot.data ?? false)
-                  ? 'Database ရှိနေပါတယ်'
-                  : 'Database is Empty',
+              existsDB ? 'Database ရှိနေပါတယ်' : 'Database is Empty',
               style: TextStyle(fontSize: 18),
             ),
-            DownloadDatabaseListTile(),
-            AddLocalDatabaseListTile(),
+            DownloadDatabaseListTile(onCheckDB: init),
+            AddLocalDatabaseListTile(onCheckDB: init),
+
+            !existsDB
+                ? SizedBox.shrink()
+                : Card(
+                    child: ListTile(
+                      iconColor: Colors.red,
+                      leading: Icon(Icons.delete),
+                      title: Text('Delete DB File'),
+                      onTap: _deleteDBFile,
+                    ),
+                  ),
+            !existsDB ? SizedBox.shrink() : Divider(),
+            !existsDB ? SizedBox.shrink() : ExportDatabaseListTile(),
           ],
         );
       },
     );
   }
 
-  Widget _nextBtn() {
-    return Padding(
-      padding: const EdgeInsets.all(8.0),
-      child: ElevatedButton(
-        style: ElevatedButton.styleFrom(
-          backgroundColor: const Color.fromARGB(255, 6, 55, 95),
-        ),
-        onPressed: _readedGetstart,
-        child: Text('စတင်အသုံးပြုမယ်', style: TextStyle(color: Colors.white)),
-      ),
+  void _deleteDBFile() {
+    showTConfirmDialog(
+      context,
+      contentText: 'DB File ကိုဖျက်ချင်တာ သေချာပြီလား?',
+      submitText: 'Delete Forever',
+      onSubmit: () async {
+        if (!DatabaseServices.dbFile().existsSync()) return;
+        await DatabaseServices.dbFile().delete();
+        if (DatabaseServices.dbLockFile().existsSync()) {
+          await DatabaseServices.dbLockFile().delete();
+        }
+        await init();
+      },
     );
-  }
-
-  void _readedGetstart() async {
-    if (!DatabaseServices.isLocalDatabaseExists()) {
-      showTMessageDialogError(
-        context,
-        'Database မရှိပါ!...\nDatabase ကိုအရင် Download လုပ်ပါ!...',
-      );
-      return;
-    }
-    try {
-      // remove .lock file
-      final file = File('${DatabaseServices.getLocalDatabasePath()}.lock');
-      if (file.existsSync()) {
-        await file.delete();
-      }
-      await TDB.getInstance().open(DatabaseServices.getLocalDatabasePath());
-      if (!mounted) return;
-      await context.read<ApyarProvider>().init(isUsedCache: false);
-      if (!mounted) return;
-      Navigator.pop(context);
-    } catch (e) {
-      if (!mounted) return;
-      showTMessageDialogError(context, e.toString());
-    }
   }
 }

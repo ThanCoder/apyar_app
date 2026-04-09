@@ -1,14 +1,13 @@
 import 'dart:async';
 
+import 'package:apyar_app/app/ui/components/apyar_list_item.dart';
+import 'package:apyar_app/bloc_app/cubits/apyar_list_cubit.dart';
 import 'package:apyar_app/core/models/apyar.dart';
 import 'package:apyar_app/app/routes.dart';
-import 'package:apyar_app/app/ui/components/bookmark_toggle_widget.dart';
 import 'package:apyar_app/app/ui/content/content_screen.dart';
 import 'package:flutter/material.dart';
-import 'package:t_db/t_db.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:t_widgets/t_widgets.dart';
-
-final _box = TDB.getInstance().getBox<Apyar>();
 
 class SearchScreen extends StatefulWidget {
   const SearchScreen({super.key});
@@ -41,23 +40,8 @@ class _SearchScreenState extends State<SearchScreen> {
   }
 
   void init() async {
-    try {
-      setState(() {
-        isLoading = true;
-      });
-      apyarList = await _box.getAll();
-
-      if (!mounted) return;
-      setState(() {
-        isLoading = false;
-      });
-    } catch (e) {
-      if (!mounted) return;
-      setState(() {
-        isLoading = false;
-      });
-      showTMessageDialogError(context, e.toString());
-    }
+    apyarList = context.read<ApyarListCubit>().state.list;
+    setState(() {});
   }
 
   @override
@@ -86,7 +70,7 @@ class _SearchScreenState extends State<SearchScreen> {
       pinned: false,
       flexibleSpace: SearchBar(
         controller: searchController,
-        autoFocus: true,
+        // autoFocus: true,
         hintText: 'Search Text...',
         shape: WidgetStatePropertyAll(
           RoundedRectangleBorder(
@@ -127,10 +111,9 @@ class _SearchScreenState extends State<SearchScreen> {
   }
 
   Widget _getListItem(Apyar apyar) {
-    return ListTile(
-      title: Text(apyar.title),
-      trailing: BookmarkToggleWidget(apyar: apyar),
-      onTap: () =>
+    return ApyarListItem(
+      apyar: apyar,
+      onClicked: (apyar) =>
           goRoute(context, builder: (context) => ContentScreen(apyar: apyar)),
     );
   }
@@ -154,9 +137,9 @@ class _SearchScreenState extends State<SearchScreen> {
 
   void _search() async {
     final query = searchController.text;
-    resultList = await _box.queryAll(
-      (value) => value.title.toLowerCase().contains(query.toLowerCase()),
-    );
+    resultList = apyarList
+        .where((e) => e.title.toLowerCase().contains(query.toLowerCase()))
+        .toList();
     // Sorting rule
     resultList.sort((a, b) {
       final at = a.title.toLowerCase();

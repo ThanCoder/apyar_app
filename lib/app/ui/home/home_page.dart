@@ -1,14 +1,13 @@
+import 'package:apyar_app/app/ui/components/apyar_list_item.dart';
+import 'package:apyar_app/bloc_app/cubits/apyar_list_cubit.dart';
+import 'package:apyar_app/core/extensions/buildcontext_extensions.dart';
 import 'package:apyar_app/core/models/apyar.dart';
-import 'package:apyar_app/core/providers/apyar_provider.dart';
 import 'package:apyar_app/app/routes.dart';
-import 'package:apyar_app/app/ui/components/bookmark_toggle_widget.dart';
 import 'package:apyar_app/app/ui/content/content_screen.dart';
-import 'package:apyar_app/app/ui/database_manager/database_manager_screen.dart';
 import 'package:apyar_app/app/ui/search/search_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:apyar_app/more_libs/setting/setting.dart';
-import 'package:provider/provider.dart';
-import 'package:t_db/t_db.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:t_widgets/t_widgets.dart';
 import 'package:than_pkg/than_pkg.dart';
 
@@ -31,17 +30,7 @@ class _HomePageState extends State<HomePage>
   bool get wantKeepAlive => true;
 
   Future<void> init({bool isUsedCache = true}) async {
-    if (!TDB.getInstance().isDataRecordCreatedExists) {
-      goRoute(context, builder: (context) => DatabaseManagerScreen());
-      return;
-    }
-    context.read<ApyarProvider>().init(
-      isUsedCache: isUsedCache,
-      onError: (message) {
-        if (!mounted) return;
-        showTMessageDialogError(context, message);
-      },
-    );
+    await context.read<ApyarListCubit>().init();
   }
 
   @override
@@ -49,28 +38,52 @@ class _HomePageState extends State<HomePage>
     super.build(context);
     return Scaffold(
       appBar: _getAppbar(),
-      body: getWProvider.isLoading
-          ? Center(child: TLoader.random())
-          : NestedScrollView(
-              headerSliverBuilder: (context, innerBoxIsScrolled) => [
-                // _getAppbar(),
-                _getSearchBar(),
-              ],
-              body: RefreshIndicator.adaptive(
-                onRefresh: () async => init(isUsedCache: false),
-                child: CustomScrollView(
-                  slivers: [
-                    SliverToBoxAdapter(child: SizedBox(height: 10)),
-                    _getList(),
-                  ],
-                ),
+      body: BlocBuilder<ApyarListCubit, ApyarListCubitState>(
+        builder: (context, state) {
+          if (state.isLoading) {
+            return Center(child: TLoader.random());
+          }
+          if (state.errorMessage.isNotEmpty) {
+            return Center(
+              child: Text(
+                'Error: ${state.errorMessage}',
+                style: TextStyle(color: Colors.red),
+              ),
+            );
+          }
+          if (state.list.isEmpty) {
+            return Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Text('List Empty!'),
+                  IconButton(
+                    onPressed: init,
+                    icon: Icon(Icons.refresh_sharp, color: Colors.blue),
+                  ),
+                ],
+              ),
+            );
+          }
+          return NestedScrollView(
+            headerSliverBuilder: (context, innerBoxIsScrolled) => [
+              // _getAppbar(),
+              _getSearchBar(),
+            ],
+            body: RefreshIndicator.adaptive(
+              onRefresh: () async => init(isUsedCache: false),
+              child: CustomScrollView(
+                slivers: [
+                  SliverToBoxAdapter(child: SizedBox(height: 10)),
+                  _getList(state.list),
+                ],
               ),
             ),
+          );
+        },
+      ),
     );
   }
-
-  ApyarProvider get getWProvider => context.watch<ApyarProvider>();
-  ApyarProvider get getRProvider => context.read<ApyarProvider>();
 
   AppBar _getAppbar() {
     return AppBar(
@@ -109,31 +122,55 @@ class _HomePageState extends State<HomePage>
     );
   }
 
-  Widget _getList() {
+  Widget _getList(List<Apyar> list) {
     return SliverList.separated(
-      itemCount: getWProvider.list.length,
-      itemBuilder: (context, index) => _getListItem(getWProvider.list[index]),
+      itemCount: list.length,
+      itemBuilder: (context, index) => ApyarListItem(
+        apyar: list[index],
+        onClicked: (apyar) =>
+            goRoute(context, builder: (context) => ContentScreen(apyar: apyar)),
+        onRightClicked: _showItemMenu,
+      ),
       separatorBuilder: (context, index) => Divider(),
-    );
-  }
-
-  Widget _getListItem(Apyar apyar) {
-    return ListTile(
-      title: Text(apyar.title),
-      trailing: BookmarkToggleWidget(apyar: apyar),
-      onTap: () =>
-          goRoute(context, builder: (context) => ContentScreen(apyar: apyar)),
     );
   }
 
   // sort
   void _showSort() {
-    showTSortDialog(
+    // showTSortDialog(
+    //   context,
+    //   isAsc: getRProvider.sortAsc,
+    //   sortList: getRProvider.sortList,
+    //   currentId: getRProvider.sortId,
+    //   sortDialogCallback: getRProvider.setSort,
+    // );
+  }
+
+  void _showItemMenu(Apyar apyar) {
+    showTMenuBottomSheet(
       context,
-      isAsc: getRProvider.sortAsc,
-      sortList: getRProvider.sortList,
-      currentId: getRProvider.sortId,
-      sortDialogCallback: getRProvider.setSort,
+      children: [
+        ListTile(
+          iconColor: Colors.red,
+          leading: Icon(Icons.delete),
+          title: Text('Delete'),
+          onTap: () {
+            context.closeNavi();
+            _deleteConfirm(apyar);
+          },
+        ),
+      ],
+    );
+  }
+
+  void _deleteConfirm(Apyar apyar) {
+    showTConfirmDialog(
+      context,
+      contentText: 'ဖျက်ချင်တာသေချာပြီလား',
+      submitText: 'Delete Forever',
+      onSubmit: () {
+        context.read<ApyarListCubit>().delete(apyar);
+      },
     );
   }
 }

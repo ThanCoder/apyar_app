@@ -1,15 +1,12 @@
-import 'package:apyar_app/core/models/apyar.dart';
-import 'package:apyar_app/core/models/bookmark.dart';
-import 'package:apyar_app/core/providers/bookmark_provider.dart';
-import 'package:apyar_app/app/routes.dart';
+import 'package:apyar_app/app/ui/components/apyar_list_item.dart';
 import 'package:apyar_app/app/ui/content/content_screen.dart';
+import 'package:apyar_app/bloc_app/cubits/apyar_bookmark_list_cubit.dart';
+import 'package:apyar_app/core/extensions/buildcontext_extensions.dart';
+import 'package:apyar_app/core/models/apyar.dart';
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
-import 'package:t_db/t_db.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:t_widgets/t_widgets.dart';
 import 'package:than_pkg/than_pkg.dart';
-
-final _apyarBox = TDB.getInstance().getBox<Apyar>();
 
 class BookmarkPage extends StatefulWidget {
   const BookmarkPage({super.key});
@@ -27,23 +24,11 @@ class _BookmarkPageState extends State<BookmarkPage>
   }
 
   @override
-  void dispose() {
-    super.dispose();
-  }
-
-  @override
   bool get wantKeepAlive => false;
 
   Future<void> init() async {
-    context.read<BookmarkProvider>().init(
-      onError: (message) {
-        if (!mounted) return;
-        showTMessageDialogError(context, message);
-      },
-    );
+    await context.read<ApyarBookmarkListCubit>().init();
   }
-
-  BookmarkProvider get getProvider => context.watch<BookmarkProvider>();
 
   @override
   Widget build(BuildContext context) {
@@ -54,48 +39,40 @@ class _BookmarkPageState extends State<BookmarkPage>
         actions: [
           !TPlatform.isDesktop
               ? SizedBox.shrink()
-              : IconButton(
-                  onPressed: context.read<BookmarkProvider>().init,
-                  icon: Icon(Icons.refresh),
-                ),
+              : IconButton(onPressed: init, icon: Icon(Icons.refresh)),
         ],
       ),
-      body: getProvider.isLoading
-          ? Center(child: TLoader.random())
-          : RefreshIndicator.adaptive(
-              onRefresh: context.read<BookmarkProvider>().init,
-              child: ListView.separated(
-                itemCount: getProvider.list.length,
-                separatorBuilder: (context, index) => Divider(),
-                itemBuilder: (context, index) =>
-                    _getListItem(getProvider.list[index]),
+      body: BlocBuilder<ApyarBookmarkListCubit, ApyarBookmarkListCubitState>(
+        builder: (context, state) {
+          if (state.isLoading) {
+            return Center(child: TLoader.random());
+          }
+          if (state.errorMessage.isNotEmpty) {
+            return Center(
+              child: Text(
+                'Error: ${state.errorMessage}',
+                style: TextStyle(color: Colors.red),
               ),
+            );
+          }
+          return RefreshIndicator.adaptive(
+            onRefresh: init,
+            child: ListView.separated(
+              itemCount: state.list.length,
+              separatorBuilder: (context, index) => Divider(),
+              itemBuilder: (context, index) => _getListItem(state.list[index]),
             ),
+          );
+        },
+      ),
     );
   }
 
-  Widget _getListItem(Bookmark bookmark) {
-    return ListTile(
-      title: Text(bookmark.title),
-      trailing: _getBookmarkRemoveWidget(bookmark),
-      onTap: () => _goApyarContent(bookmark),
-      // ,
+  Widget _getListItem(Apyar apyar) {
+    return ApyarListItem(
+      apyar: apyar,
+      onClicked: (apyar) =>
+          context.goRoute(builder: (context) => ContentScreen(apyar: apyar)),
     );
-  }
-
-  Widget _getBookmarkRemoveWidget(Bookmark bookmark) {
-    return IconButton(
-      onPressed: () => context.read<BookmarkProvider>().delete(bookmark),
-      icon: Icon(color: Colors.red, Icons.bookmark_remove),
-    );
-  }
-
-  void _goApyarContent(Bookmark bookmark) async {
-    final apyar = await _apyarBox.getById(bookmark.apyarId);
-    if (!mounted) return;
-    if (apyar == null) {
-      showTMessageDialogError(context, 'apyar not found!');
-    }
-    goRoute(context, builder: (context) => ContentScreen(apyar: apyar!));
   }
 }
