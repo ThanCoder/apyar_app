@@ -10,7 +10,9 @@ class ApyarBookmarkServices {
   factory ApyarBookmarkServices() => instance;
 
   File get dbFile =>
-      File(PathUtil.getLibaryPath(name: 'apyar-bookmark.db.json'));
+      File(PathUtil.getLibaryPath(name: 'apyar.bookmark.db.json'));
+
+  bool dBFileHasData() => dbFile.existsSync() && dbFile.lengthSync() > 0;
 
   Future<void> setAll(List<Apyar> list) async {
     final contents = list.map((e) => e.toMap()).toList();

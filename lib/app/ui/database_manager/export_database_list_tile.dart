@@ -3,6 +3,7 @@ import 'dart:io';
 
 import 'package:apyar_app/app/ui/database_manager/database_services.dart';
 import 'package:apyar_app/more_libs/setting/core/path_util.dart';
+import 'package:dart_core_extensions/dart_core_extensions.dart';
 import 'package:flutter/material.dart';
 import 'package:t_widgets/functions/index.dart';
 import 'package:t_widgets/progress_manager/progress_dialog.dart';
@@ -20,7 +21,13 @@ class _ExportDatabaseListTileState extends State<ExportDatabaseListTile> {
   @override
   Widget build(BuildContext context) {
     return Card(
-      child: ListTile(title: Text('Export Database'), onTap: _export),
+      child: ListTile(
+        title: Text('Export Database'),
+        subtitle: Text(
+          'Size: ${DatabaseServices.dbFile().lengthSync().fileSizeLabel()}',
+        ),
+        onTap: _export,
+      ),
     );
   }
 

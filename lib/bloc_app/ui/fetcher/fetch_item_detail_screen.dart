@@ -33,11 +33,13 @@ class _FetchItemDetailScreenState extends State<FetchItemDetailScreen> {
   FetchItemResponse? response;
   bool isLoading = false;
   bool isFullScreen = false;
+  final List<FetchItemReturnData> convertList = [];
 
   Future<void> init({bool usedCache = true}) async {
     try {
       response = null;
       isLoading = true;
+      convertList.clear();
       setState(() {});
 
       response = await FetcherServices.instance.fetchItemDetail(
@@ -160,15 +162,7 @@ class _FetchItemDetailScreenState extends State<FetchItemDetailScreen> {
             title: Text('Convert Zawgyi Font'),
             onTap: () {
               context.closeNavi();
-              final list = response!.list.map((e) {
-                if (e.type == FetchItemReturnDataType.text) {
-                  return e.copyWith(result: Rabbit.uni2zg(e.result));
-                }
-                return e;
-              }).toList();
-              setState(() {
-                response = response!.copyWith(list: list);
-              });
+              _convertFont(false);
             },
           ),
         if (response != null)
@@ -177,18 +171,39 @@ class _FetchItemDetailScreenState extends State<FetchItemDetailScreen> {
             title: Text('Convert Pyidaungsu Font'),
             onTap: () {
               context.closeNavi();
-              final list = response!.list.map((e) {
-                if (e.type == FetchItemReturnDataType.text) {
-                  return e.copyWith(result: Rabbit.zg2uni(e.result));
-                }
-                return e;
-              }).toList();
-              setState(() {
-                response = response!.copyWith(list: list);
-              });
+              _convertFont(true);
+            },
+          ),
+        if (convertList.isNotEmpty)
+          ListTile(
+            leading: Icon(Icons.font_download_outlined),
+            title: Text('Convert Orginal Font'),
+            onTap: () {
+              context.closeNavi();
+              response = response!.copyWith(list: List.of(convertList));
+              convertList.clear();
+              setState(() {});
             },
           ),
       ],
     );
+  }
+
+  void _convertFont(bool isPyidaungsuFont) {
+    if (convertList.isEmpty) {
+      convertList.addAll(response!.list);
+    }
+    final list = convertList.map((e) {
+      if (e.type == FetchItemReturnDataType.text) {
+        return e.copyWith(
+          result: isPyidaungsuFont
+              ? Rabbit.zg2uni(e.result)
+              : Rabbit.uni2zg(e.result),
+        );
+      }
+      return e;
+    }).toList();
+    response = response!.copyWith(list: list);
+    setState(() {});
   }
 }

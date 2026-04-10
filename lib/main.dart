@@ -81,8 +81,8 @@ void main() async {
       child: MultiBlocProvider(
         providers: [
           BlocProvider(create: (context) => FetchItemResponseCubit()..init()),
-          BlocProvider(create: (context) => ApyarListCubit()),
           BlocProvider(create: (context) => ApyarBookmarkListCubit()),
+          BlocProvider(create: (context) => ApyarListCubit(context.read<ApyarBookmarkListCubit>())),
         ],
         child: const MyApp(),
       ),

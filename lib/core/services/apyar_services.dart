@@ -30,4 +30,8 @@ class ApyarServices {
   Future<ApyarContent?> getContentByApyarId(int id) async {
     return await _contentBox.getOne((e) => e.apyarId == id);
   }
+
+  Future<int> addContentByApyarId(int id, ApyarContent value) async {
+    return await _contentBox.add(value);
+  }
 }

@@ -1,5 +1,6 @@
 import 'package:apyar_app/bloc_app/cubits/fetch_item_response_cubit.dart';
 import 'package:apyar_app/bloc_app/ui/fetcher/fetch_item_detail_screen.dart';
+import 'package:apyar_app/bloc_app/ui/fetcher/fetch_item_response_bookmark_detail_page.dart';
 import 'package:apyar_app/bloc_app/ui/fetcher/fetcher_types.dart';
 import 'package:apyar_app/components/cache_image.dart';
 import 'package:apyar_app/core/extensions/buildcontext_extensions.dart';
@@ -80,9 +81,11 @@ class _FetchItemResponseBookmarkListPageState
       mouseCursor: SystemMouseCursors.click,
       onTap: () {
         context.goRoute(
-          builder: (context) => FetchItemDetailScreen(item: item.item),
+          builder: (context) => FetchItemResponseBookmarkDetailPage(item: item),
         );
       },
+      onSecondaryTap: () => _showItemMenu(item),
+      onLongPress: () => _showItemMenu(item),
       child: Stack(
         children: [
           Positioned.fill(
@@ -111,6 +114,24 @@ class _FetchItemResponseBookmarkListPageState
           ),
         ],
       ),
+    );
+  }
+
+  void _showItemMenu(FetchItemResponse item) {
+    showTMenuBottomSheet(
+      context,
+      title: Text('Menu: `${item.item.title}`', style: TextStyle(fontSize: 13)),
+      children: [
+        ListTile(
+          iconColor: Colors.red,
+          leading: Icon(Icons.remove_circle),
+          title: Text('Remove'),
+          onTap: () {
+            context.closeNavi();
+            context.read<FetchItemResponseCubit>().remove(item);
+          },
+        ),
+      ],
     );
   }
 }

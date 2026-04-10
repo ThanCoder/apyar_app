@@ -9,6 +9,7 @@ import 'package:than_pkg/than_pkg.dart';
 
 class FetchListHomeScreen extends StatefulWidget {
   final String url;
+  static String? currentUrl;
   const FetchListHomeScreen({super.key, required this.url});
 
   @override
@@ -19,12 +20,17 @@ class _FetchListHomeScreenState extends State<FetchListHomeScreen> {
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) => init(widget.url));
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (FetchListHomeScreen.currentUrl != null) {
+        init(FetchListHomeScreen.currentUrl!);
+        return;
+      }
+      init(widget.url);
+    });
   }
 
   FetchListResponse? response;
   bool isLoading = false;
-  String? currentUrl;
 
   Future<void> init(String url, {bool usedCache = true}) async {
     try {
@@ -39,7 +45,7 @@ class _FetchListHomeScreenState extends State<FetchListHomeScreen> {
         usedCache: usedCache,
       );
       // await Future.delayed(Duration(seconds: 2));
-      currentUrl = url;
+      FetchListHomeScreen.currentUrl = url;
 
       if (!mounted) return;
       setState(() {
@@ -62,13 +68,19 @@ class _FetchListHomeScreenState extends State<FetchListHomeScreen> {
         actions: [
           if (TPlatform.isDesktop)
             IconButton(
-              onPressed: () => init(currentUrl ?? widget.url, usedCache: false),
+              onPressed: () => init(
+                FetchListHomeScreen.currentUrl ?? widget.url,
+                usedCache: false,
+              ),
               icon: Icon(Icons.refresh),
             ),
         ],
       ),
       body: RefreshIndicator.noSpinner(
-        onRefresh: () => init(currentUrl ?? widget.url, usedCache: false),
+        onRefresh: () => init(
+          FetchListHomeScreen.currentUrl ?? widget.url,
+          usedCache: false,
+        ),
         child: CustomScrollView(
           slivers: [
             if (isLoading)
@@ -89,6 +101,7 @@ class _FetchListHomeScreenState extends State<FetchListHomeScreen> {
                   ),
                 ),
               ),
+            if (response != null) _pagiList(),
             // result
             if (response != null) _result(),
 

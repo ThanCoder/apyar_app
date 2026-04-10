@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:apyar_app/app/ui/components/apyar_list_item.dart';
 import 'package:apyar_app/bloc_app/cubits/apyar_list_cubit.dart';
+import 'package:apyar_app/core/extensions/buildcontext_extensions.dart';
 import 'package:apyar_app/core/models/apyar.dart';
 import 'package:apyar_app/app/routes.dart';
 import 'package:apyar_app/app/ui/content/content_screen.dart';
@@ -18,6 +19,7 @@ class SearchScreen extends StatefulWidget {
 
 class _SearchScreenState extends State<SearchScreen> {
   final searchController = TextEditingController();
+  final searchFocus = FocusNode();
   bool isLoading = false;
   bool isSearching = false;
   List<Apyar> apyarList = [];
@@ -33,6 +35,7 @@ class _SearchScreenState extends State<SearchScreen> {
   @override
   void dispose() {
     searchController.dispose();
+    searchFocus.dispose();
     if (_timer?.isActive ?? false) {
       _timer?.cancel();
     }
@@ -70,7 +73,8 @@ class _SearchScreenState extends State<SearchScreen> {
       pinned: false,
       flexibleSpace: SearchBar(
         controller: searchController,
-        // autoFocus: true,
+        focusNode: searchFocus,
+        autoFocus: true,
         hintText: 'Search Text...',
         shape: WidgetStatePropertyAll(
           RoundedRectangleBorder(
@@ -113,8 +117,11 @@ class _SearchScreenState extends State<SearchScreen> {
   Widget _getListItem(Apyar apyar) {
     return ApyarListItem(
       apyar: apyar,
-      onClicked: (apyar) =>
-          goRoute(context, builder: (context) => ContentScreen(apyar: apyar)),
+      onClicked: (apyar) {
+        searchFocus.unfocus();
+        goRoute(context, builder: (context) => ContentScreen(apyar: apyar));
+      },
+      onRightClicked: _showItemMenu,
     );
   }
 
@@ -164,5 +171,38 @@ class _SearchScreenState extends State<SearchScreen> {
     setState(() {
       isSearching = false;
     });
+  }
+
+  void _showItemMenu(Apyar apyar) {
+    showTMenuBottomSheet(
+      context,
+      children: [
+        ListTile(
+          iconColor: Colors.red,
+          leading: Icon(Icons.delete),
+          title: Text('Delete'),
+          onTap: () {
+            context.closeNavi();
+            _deleteConfirm(apyar);
+          },
+        ),
+      ],
+    );
+  }
+
+  void _deleteConfirm(Apyar apyar) {
+    showTConfirmDialog(
+      context,
+      contentText: 'ဖျက်ချင်တာသေချာပြီလား',
+      submitText: 'Delete Forever',
+      onSubmit: () async {
+        await context.read<ApyarListCubit>().delete(apyar);
+        final index = resultList.indexWhere((e) => e.autoId == apyar.autoId);
+        if (index == -1) return;
+        resultList.removeAt(index);
+        if (!mounted) return;
+        setState(() {});
+      },
+    );
   }
 }

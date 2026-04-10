@@ -137,13 +137,17 @@ class _HomePageState extends State<HomePage>
 
   // sort
   void _showSort() {
-    // showTSortDialog(
-    //   context,
-    //   isAsc: getRProvider.sortAsc,
-    //   sortList: getRProvider.sortList,
-    //   currentId: getRProvider.sortId,
-    //   sortDialogCallback: getRProvider.setSort,
-    // );
+    final state = context.read<ApyarListCubit>().state;
+    showTSortDialog(
+      context,
+      isAsc: state.sortAsc,
+      sortList: state.sortList,
+      currentId: state.sortId,
+      sortDialogCallback: (id, isAsc) {
+        context.read<ApyarListCubit>().setSort(id, isAsc);
+        context.read<ApyarListCubit>().sort();
+      },
+    );
   }
 
   void _showItemMenu(Apyar apyar) {

@@ -1,11 +1,9 @@
 import 'dart:io';
 
 import 'package:apyar_app/app/ui/database_manager/database_services.dart';
-import 'package:apyar_app/more_libs/setting/core/path_util.dart';
 import 'package:file_selector/file_selector.dart';
 import 'package:flutter/material.dart';
 import 'package:t_widgets/t_widgets.dart';
-import 'package:permission_handler/permission_handler.dart';
 
 class AddLocalDatabaseListTile extends StatefulWidget {
   final void Function() onCheckDB;
@@ -30,12 +28,12 @@ class _AddLocalDatabaseListTileState extends State<AddLocalDatabaseListTile> {
 
   void _addLocalDB() async {
     try {
-      if (await Permission.storage.isDenied) {
-        await Permission.storage.request();
-      }
-      if (await Permission.manageExternalStorage.isDenied) {
-        await Permission.manageExternalStorage.request();
-      }
+      // if (await Permission.storage.isDenied) {
+      //   await Permission.storage.request();
+      // }
+      // if (await Permission.manageExternalStorage.isDenied) {
+      //   await Permission.manageExternalStorage.request();
+      // }
 
       final res = await openFile(
         acceptedTypeGroups: [
