@@ -1,5 +1,6 @@
 import 'package:apyar_app/bloc_app/ui/fetcher/f_website_types.dart';
 import 'package:apyar_app/bloc_app/ui/fetcher/fetch_item_detail_screen.dart';
+import 'package:apyar_app/bloc_app/ui/fetcher/fetch_mana_content_screen.dart';
 import 'package:apyar_app/bloc_app/ui/fetcher/fetcher_services.dart';
 import 'package:apyar_app/bloc_app/ui/fetcher/fetcher_types.dart';
 import 'package:apyar_app/components/cache_image.dart';
@@ -134,8 +135,15 @@ class _FetchListHomeScreenState extends State<FetchListHomeScreen> {
       mouseCursor: SystemMouseCursors.click,
       onTap: () {
         context.goRoute(
-          builder: (context) =>
-              FetchItemDetailScreen(item: item, website: widget.website),
+          builder: (context) {
+            if (widget.website.type == FWebsiteType.managa) {
+              return FetchManaContentScreen(
+                item: item,
+                website: widget.website,
+              );
+            }
+            return FetchItemDetailScreen(item: item, website: widget.website);
+          },
         );
       },
       child: Stack(

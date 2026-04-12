@@ -1,3 +1,28 @@
+// manag
+class FetchManagContentResponse {
+  final String title;
+  final String coverUrl;
+  final String content;
+  List<FetchManagContentResponseChapterItem> items;
+
+  FetchManagContentResponse({
+    required this.title,
+    required this.coverUrl,
+    required this.content,
+    required this.items,
+  });
+}
+
+class FetchManagContentResponseChapterItem {
+  final String title;
+  final String url;
+
+  const FetchManagContentResponseChapterItem({
+    required this.title,
+    required this.url,
+  });
+}
+
 //fetch item
 class FetchItemResponse {
   final FetchListItem item;
@@ -25,10 +50,7 @@ class FetchItemResponse {
     FetchListItem? item,
     List<FetchItemReturnData>? list,
   }) {
-    return FetchItemResponse(
-      item: item ?? this.item,
-      list: list ?? this.list,
-    );
+    return FetchItemResponse(item: item ?? this.item, list: list ?? this.list);
   }
 }
 

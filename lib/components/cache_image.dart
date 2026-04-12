@@ -21,6 +21,9 @@ class CacheImage extends StatelessWidget {
       errorBuilder: (context, error, stackTrace) {
         return Center(child: Text('Error: $error'));
       },
+      // loadingBuilder: (context, child, loadingProgress) {
+      //   return TImage(source: '');
+      // },
     );
     // return CachedNetworkImage(
     //   imageUrl: url,

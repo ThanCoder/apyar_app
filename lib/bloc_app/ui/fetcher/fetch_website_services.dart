@@ -59,6 +59,52 @@ class FetchWebsiteServices {
           ],
         ),
       ),
+      FWebsite(
+        title: 'adult-manhwamyanmar',
+        desc: 'Manhwa 18+ မြန်မာဘာသာပြန် ',
+        url: 'https://adult.manhwamyanmar.com',
+        type: FWebsiteType.managa,
+        listQuery: FWebsiteListQuery(
+          selectorAll: '.gridmini-posts .gridmini-grid-post',
+          titleQuery: FWebsiteQuery(selector: '.gridmini-grid-post-title'),
+          urlQuery: FWebsiteQuery(
+            selector: '.gridmini-grid-post-thumbnail-link',
+            attribute: 'href',
+          ),
+          coverUrlQuery: FWebsiteQuery(
+            selector: '.gridmini-grid-post-thumbnail-img',
+            attribute: 'src',
+          ),
+        ),
+        managContentQuery: FWebsiteManagContentQuery(
+          titleQuery: FWebsiteQuery(selector: '.post-title'),
+          coverUrlQuery: FWebsiteQuery(
+            selector: '.wp-post-image',
+            attribute: 'src',
+          ),
+          contentQuery: FWebsiteQuery(
+            selector: '.entry-content',
+            attribute: 'html',
+          ),
+          selectorAll: '.entry-content center a',
+          chapterSingleTitleQuery: FWebsiteQuery(selector: 'button'),
+          chapterSingleUrlQuery: FWebsiteQuery(attribute: 'href'),
+        ),
+        managListDetailQuery: FWebsiteManagListDetailQuery(
+          selectorAll: '.entry-content img',
+          coverUrlQuery: FWebsiteQuery(attribute: 'data-src'),
+        ),
+        paginationQuery: FWebsitePaginationQuery(
+          selectorAll: '.nav-links a',
+          textQuery: FWebsiteQuery(),
+          urlQuery: FWebsiteQuery(attribute: 'href'),
+        ),
+        detailQuery: FWebsiteDetailQuery(
+          queries: [
+            FWebsiteQuery(selector: '.entry-content img', attribute: 'src'),
+          ],
+        ),
+      ),
     ];
     return list;
   }

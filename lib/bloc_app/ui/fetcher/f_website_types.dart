@@ -4,17 +4,25 @@ import 'package:t_html_parser/t_html_parser.dart';
 
 import 'fetcher_types.dart';
 
+enum FWebsiteType { text, managa }
+
 class FWebsite {
   final String title;
   final String desc;
   final String url;
+  final FWebsiteType type;
   final FWebsiteListQuery listQuery;
   final FWebsitePaginationQuery paginationQuery;
   final FWebsiteDetailQuery detailQuery;
+  final FWebsiteManagContentQuery? managContentQuery;
+  final FWebsiteManagListDetailQuery? managListDetailQuery;
 
   const FWebsite({
     required this.title,
     this.desc = '',
+    this.type = FWebsiteType.text,
+    this.managContentQuery,
+    this.managListDetailQuery,
     required this.url,
     required this.listQuery,
     required this.paginationQuery,
@@ -44,15 +52,6 @@ class FWebsiteListQuery {
         DomSingleQuery((ele) => titleQuery.getQueryResult(ele)),
         DomSingleQuery((ele) => urlQuery.getQueryResult(ele)),
         DomSingleQuery((ele) => coverUrlQuery.getQueryResult(ele)),
-        // DomSingleQuery(
-        //   (ele) => ele.getQuerySelectorText(selector: '.card-title'),
-        // ),
-        // DomSingleQuery(
-        //   (ele) => ele.getQuerySelectorAttr(selector: 'a', attr: 'href'),
-        // ),
-        // DomSingleQuery(
-        //   (ele) => ele.getQuerySelectorAttr(selector: 'img', attr: 'src'),
-        // ),
       ],
     );
 
@@ -160,6 +159,83 @@ class FWebsiteDetailQuery {
       );
     }).toList();
     return list;
+  }
+}
+
+class FWebsiteManagContentQuery {
+  final FWebsiteQuery titleQuery;
+  final FWebsiteQuery coverUrlQuery;
+  final FWebsiteQuery contentQuery;
+  final String selectorAll;
+  final FWebsiteQuery chapterSingleTitleQuery;
+  final FWebsiteQuery chapterSingleUrlQuery;
+
+  const FWebsiteManagContentQuery({
+    required this.titleQuery,
+    required this.coverUrlQuery,
+    required this.contentQuery,
+    required this.selectorAll,
+    required this.chapterSingleTitleQuery,
+    required this.chapterSingleUrlQuery,
+  });
+
+  (String, String, String) getContentResult(String html) {
+    final list = DomSelector.getResult(
+      html,
+      queries: [
+        DomSingleQuery((ele) => titleQuery.getQueryResult(ele)),
+        DomSingleQuery((ele) => coverUrlQuery.getQueryResult(ele)),
+        DomSingleQuery((ele) => contentQuery.getQueryResult(ele)),
+      ],
+    );
+    return (list[0], list[1], list[2]);
+  }
+
+  List<FetchManagContentResponseChapterItem> getChapterListResult(
+    String html, {
+    required String hostUrl,
+  }) {
+    final list = DomSelector.getResultList(
+      html,
+      selectorAll: selectorAll,
+      queries: [
+        DomSingleQuery((ele) => chapterSingleTitleQuery.getQueryResult(ele)),
+        DomSingleQuery((ele) => chapterSingleUrlQuery.getQueryResult(ele)),
+      ],
+    );
+    final items = list.map((e) {
+      final pageUrl = e[1].startsWith('/')
+          ? ('$hostUrl/${e[1]}').getNormalizeSlash.replaceAll(':/', '://')
+          : e[1];
+      return FetchManagContentResponseChapterItem(title: e[0], url: pageUrl);
+    }).toList();
+    return items;
+  }
+}
+
+class FWebsiteManagListDetailQuery {
+  final String selectorAll;
+  final FWebsiteQuery coverUrlQuery;
+
+  const FWebsiteManagListDetailQuery({
+    required this.selectorAll,
+    required this.coverUrlQuery,
+  });
+  List<String> getResultList(String html, {required String hostUrl}) {
+    final list = DomSelector.getResultList(
+      html,
+      selectorAll: selectorAll,
+      // selectorAll: '.g-3 .col-6',
+      queries: [DomSingleQuery((ele) => coverUrlQuery.getQueryResult(ele))],
+    );
+
+    final items = list.map((e) {
+      final coverUrl = e[0].startsWith('/')
+          ? ('$hostUrl/${e[0]}').getNormalizeSlash.replaceAll(':/', '://')
+          : e[0];
+      return coverUrl;
+    }).toList();
+    return items;
   }
 }
 
