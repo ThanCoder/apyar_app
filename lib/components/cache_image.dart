@@ -15,7 +15,13 @@ class CacheImage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return TCacheImage(url: url, fit: fit ?? BoxFit.contain);
+    return TCacheImage(
+      url: url,
+      fit: fit ?? BoxFit.contain,
+      errorBuilder: (context, error, stackTrace) {
+        return Center(child: Text('Error: $error'));
+      },
+    );
     // return CachedNetworkImage(
     //   imageUrl: url,
     //   fit: fit,

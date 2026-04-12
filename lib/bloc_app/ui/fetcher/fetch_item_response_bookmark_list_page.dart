@@ -1,5 +1,4 @@
 import 'package:apyar_app/bloc_app/cubits/fetch_item_response_cubit.dart';
-import 'package:apyar_app/bloc_app/ui/fetcher/fetch_item_detail_screen.dart';
 import 'package:apyar_app/bloc_app/ui/fetcher/fetch_item_response_bookmark_detail_page.dart';
 import 'package:apyar_app/bloc_app/ui/fetcher/fetcher_types.dart';
 import 'package:apyar_app/components/cache_image.dart';

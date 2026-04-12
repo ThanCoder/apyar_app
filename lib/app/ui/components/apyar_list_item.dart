@@ -6,7 +6,12 @@ class ApyarListItem extends StatelessWidget {
   final Apyar apyar;
   final void Function(Apyar apyar) onClicked;
   final void Function(Apyar apyar)? onRightClicked;
-  const ApyarListItem({super.key,required this.apyar,required this.onClicked,this.onRightClicked});
+  const ApyarListItem({
+    super.key,
+    required this.apyar,
+    required this.onClicked,
+    this.onRightClicked,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -16,7 +21,9 @@ class ApyarListItem extends StatelessWidget {
       child: ListTile(
         title: Text(apyar.title),
         trailing: BookmarkToggleWidget(apyar: apyar),
-        onTap: () => onClicked(apyar)),
+        onTap: () => onClicked(apyar),
+      ),
+      onLongPress: () => onRightClicked?.call(apyar),
     );
   }
 }

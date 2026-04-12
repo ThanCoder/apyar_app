@@ -1,5 +1,6 @@
 import 'package:apyar_app/app/ui/components/apyar_list_item.dart';
 import 'package:apyar_app/bloc_app/cubits/apyar_list_cubit.dart';
+import 'package:apyar_app/bloc_app/ui/forms/apyar_edit_form.dart';
 import 'package:apyar_app/core/extensions/buildcontext_extensions.dart';
 import 'package:apyar_app/core/models/apyar.dart';
 import 'package:apyar_app/app/routes.dart';
@@ -89,14 +90,14 @@ class _HomePageState extends State<HomePage>
     return AppBar(
       title: Text(Setting.instance.appName),
       actions: [
-        IconButton(onPressed: _showSort, icon: Icon(Icons.sort)),
-        if (!TPlatform.isDesktop)
-          SizedBox.shrink()
-        else
+        if (TPlatform.isDesktop)
           IconButton(
             onPressed: () => init(isUsedCache: false),
             icon: Icon(Icons.refresh),
           ),
+        IconButton(onPressed: _showSort, icon: Icon(Icons.sort)),
+        IconButton(onPressed: _showMainMenu, icon: Icon(Icons.more_vert)),
+
         // IconButton(onPressed: _onShowMenu, icon: Icon(Icons.more_vert_rounded)),
       ],
     );
@@ -150,10 +151,34 @@ class _HomePageState extends State<HomePage>
     );
   }
 
+  void _showMainMenu() {
+    showTMenuBottomSheet(
+      context,
+      children: [
+        ListTile(
+          leading: Icon(Icons.add),
+          title: Text('New Apyar'),
+          onTap: () {
+            context.closeNavi();
+            _showNewApyarDialog();
+          },
+        ),
+      ],
+    );
+  }
+
   void _showItemMenu(Apyar apyar) {
     showTMenuBottomSheet(
       context,
       children: [
+        ListTile(
+          leading: Icon(Icons.edit_document),
+          title: Text('Edit'),
+          onTap: () {
+            context.closeNavi();
+            _showEditForm(apyar);
+          },
+        ),
         ListTile(
           iconColor: Colors.red,
           leading: Icon(Icons.delete),
@@ -165,6 +190,24 @@ class _HomePageState extends State<HomePage>
         ),
       ],
     );
+  }
+
+  void _showNewApyarDialog() {
+    showTReanmeDialog(
+      context,
+      text: 'New Untitled',
+      submitText: 'New',
+      onSubmit: (text) async {
+        final apyar = Apyar(title: text, date: DateTime.now());
+        final newApyar = await context.read<ApyarListCubit>().add(apyar);
+        if (newApyar == null) return;
+        _showEditForm(newApyar);
+      },
+    );
+  }
+
+  void _showEditForm(Apyar apyar) {
+    context.goRoute(builder: (context) => ApyarEditForm(apyar: apyar));
   }
 
   void _deleteConfirm(Apyar apyar) {

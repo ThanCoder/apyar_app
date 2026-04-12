@@ -26,19 +26,20 @@ class ApyarListCubit extends Cubit<ApyarListCubitState> {
     }
   }
 
-  Future<int> add(Apyar apyar) async {
+  Future<Apyar?> add(Apyar apyar) async {
     try {
       final list = state.list;
       // remove db
       final id = await _service.add(apyar);
+      final newApyar =  apyar.copyWith(autoId: id);
 
-      list.insert(0, apyar.copyWith(autoId: id));
+      list.insert(0,newApyar);
 
       emit(state.copyWith(list: list, errorMessage: ''));
-      return id;
+      return newApyar;
     } catch (e) {
       emit(state.copyWith(errorMessage: e.toString()));
-      return -1;
+      return null;
     }
   }
 

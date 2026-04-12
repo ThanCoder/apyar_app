@@ -28,7 +28,7 @@ class Apyar {
   final int autoId;
   final String title;
   final DateTime date;
-  Apyar({this.autoId = 0, required this.title, required this.date});
+  const Apyar({this.autoId = 0, required this.title, required this.date});
 
   Apyar copyWith({int? autoId, String? title, String? body, DateTime? date}) {
     return Apyar(
@@ -64,5 +64,18 @@ class Apyar {
   @override
   String toString() {
     return 'ID: $autoId - title: $title';
+  }
+
+  static List<Apyar> exampleList = List.generate(
+    10,
+    (index) => Apyar(
+      autoId: index,
+      title: 'title $index',
+      date: DateTime.now().add(Duration(days: index)),
+    ),
+  );
+
+  factory Apyar.empty({required String title}) {
+    return Apyar(autoId: 0, title: title, date: DateTime.now());
   }
 }

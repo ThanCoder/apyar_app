@@ -1,3 +1,4 @@
+import 'package:apyar_app/bloc_app/ui/fetcher/f_website_types.dart';
 import 'package:apyar_app/bloc_app/ui/fetcher/fetch_item_detail_screen.dart';
 import 'package:apyar_app/bloc_app/ui/fetcher/fetcher_services.dart';
 import 'package:apyar_app/bloc_app/ui/fetcher/fetcher_types.dart';
@@ -8,9 +9,10 @@ import 'package:t_widgets/t_widgets.dart';
 import 'package:than_pkg/than_pkg.dart';
 
 class FetchListHomeScreen extends StatefulWidget {
-  final String url;
-  static String? currentUrl;
-  const FetchListHomeScreen({super.key, required this.url});
+  final FWebsite website;
+  static final Map<String, String> current = {};
+
+  const FetchListHomeScreen({super.key, required this.website});
 
   @override
   State<FetchListHomeScreen> createState() => _FetchListHomeScreenState();
@@ -21,11 +23,11 @@ class _FetchListHomeScreenState extends State<FetchListHomeScreen> {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (FetchListHomeScreen.currentUrl != null) {
-        init(FetchListHomeScreen.currentUrl!);
+      if (FetchListHomeScreen.current.containsKey(widget.website.title)) {
+        init(FetchListHomeScreen.current[widget.website.title]!);
         return;
       }
-      init(widget.url);
+      init(widget.website.url);
     });
   }
 
@@ -41,11 +43,11 @@ class _FetchListHomeScreenState extends State<FetchListHomeScreen> {
 
       response = await FetcherServices.instance.fetchList(
         url,
-        hostUrl: widget.url,
+        website: widget.website,
         usedCache: usedCache,
       );
       // await Future.delayed(Duration(seconds: 2));
-      FetchListHomeScreen.currentUrl = url;
+      FetchListHomeScreen.current[widget.website.title] = url;
 
       if (!mounted) return;
       setState(() {
@@ -69,7 +71,8 @@ class _FetchListHomeScreenState extends State<FetchListHomeScreen> {
           if (TPlatform.isDesktop)
             IconButton(
               onPressed: () => init(
-                FetchListHomeScreen.currentUrl ?? widget.url,
+                FetchListHomeScreen.current[widget.website.title] ??
+                    widget.website.url,
                 usedCache: false,
               ),
               icon: Icon(Icons.refresh),
@@ -78,7 +81,8 @@ class _FetchListHomeScreenState extends State<FetchListHomeScreen> {
       ),
       body: RefreshIndicator.noSpinner(
         onRefresh: () => init(
-          FetchListHomeScreen.currentUrl ?? widget.url,
+          FetchListHomeScreen.current[widget.website.title] ??
+              widget.website.url,
           usedCache: false,
         ),
         child: CustomScrollView(
@@ -94,7 +98,7 @@ class _FetchListHomeScreenState extends State<FetchListHomeScreen> {
                     children: [
                       Text('List Empty'),
                       IconButton(
-                        onPressed: () => init(widget.url),
+                        onPressed: () => init(widget.website.url),
                         icon: Icon(Icons.refresh),
                       ),
                     ],
@@ -130,7 +134,8 @@ class _FetchListHomeScreenState extends State<FetchListHomeScreen> {
       mouseCursor: SystemMouseCursors.click,
       onTap: () {
         context.goRoute(
-          builder: (context) => FetchItemDetailScreen(item: item),
+          builder: (context) =>
+              FetchItemDetailScreen(item: item, website: widget.website),
         );
       },
       child: Stack(

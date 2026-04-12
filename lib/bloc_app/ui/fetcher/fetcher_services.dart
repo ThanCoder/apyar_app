@@ -4,8 +4,8 @@ import 'package:apyar_app/bloc_app/ui/fetcher/fetcher_types.dart';
 import 'package:apyar_app/more_libs/setting/core/path_util.dart';
 import 'package:dart_core_extensions/dart_core_extensions.dart';
 import 'package:t_client/t_client.dart';
-import 'package:t_html_parser/core/dom_selector.dart';
-import 'package:t_html_parser/t_html_parser.dart';
+
+import 'f_website_types.dart';
 
 class FetcherServices {
   static final FetcherServices instance = FetcherServices._();
@@ -16,74 +16,24 @@ class FetcherServices {
 
   Future<FetchListResponse> fetchList(
     String url, {
-    required String hostUrl,
+    required FWebsite website,
     bool usedCache = true,
   }) async {
     final html = await _getCacheHtml(
       url,
-      cacheName: "allsaroak-${url.getCleanBackSlash.getName()}",
+      cacheName: "${website.title}-${url.getCleanBackSlash.getName()}",
       usedCache: usedCache,
     );
 
-    final list = DomSelector.getResultList(
-      html,
-      selectorAll: '.g-3 .col-6',
-      queries: [
-        DomSingleQuery(
-          (ele) => ele.getQuerySelectorText(selector: '.card-title'),
-        ),
-        DomSingleQuery(
-          (ele) => ele.getQuerySelectorAttr(selector: 'a', attr: 'href'),
-        ),
-        DomSingleQuery(
-          (ele) => ele.getQuerySelectorAttr(selector: 'img', attr: 'src'),
-        ),
-      ],
+    return FetchListResponse(
+      items: website.listQuery.getResult(html, hostUrl: website.url),
+      pagiList: website.paginationQuery.getResult(html, hostUrl: website.url),
     );
-    final pagiResultList = DomSelector.getResultList(
-      html,
-      selectorAll: '.pagination .page-item',
-      queries: [
-        DomSingleQuery((ele) => ele.getQuerySelectorText(selector: 'a')),
-        DomSingleQuery(
-          (ele) => ele.getQuerySelectorAttr(selector: 'a', attr: 'href'),
-        ),
-        DomSingleQuery((ele) => ele.className),
-      ],
-    );
-    final items = list.map((e) {
-      final pageUrl = e[1].startsWith('/')
-          ? ('$hostUrl/${e[1]}').getNormalizeSlash.replaceAll(':/', '://')
-          : e[1];
-      final coverUrl = e[2].startsWith('/')
-          ? ('$hostUrl/${e[2]}').getNormalizeSlash.replaceAll(':/', '://')
-          : e[2];
-      return FetchListItem(
-        title: e[0],
-        url: pageUrl,
-        coverUrl: coverUrl,
-        hostUrl: hostUrl,
-      );
-    }).toList();
-    final pagiList = <FetchListPagiItem>[];
-
-    for (var pagi in pagiResultList) {
-      if (pagi[0].isEmpty) continue;
-
-      final pageUrl = pagi[1].startsWith('/')
-          ? ('$hostUrl/${pagi[1]}').getNormalizeSlash.replaceAll(':/', '://')
-          : pagi[1];
-      bool active = pagi[2].contains('active');
-      pagiList.add(
-        FetchListPagiItem(title: pagi[0], url: pageUrl, active: active),
-      );
-    }
-
-    return FetchListResponse(items: items, pagiList: pagiList);
   }
 
   Future<FetchItemResponse> fetchItemDetail(
     FetchListItem item, {
+    required FWebsite website,
     bool usedCache = true,
   }) async {
     final html = await _getCacheHtml(
@@ -92,41 +42,10 @@ class FetcherServices {
       usedCache: usedCache,
     );
 
-    final result = DomSelector.getResult(
-      html,
-      queries: [
-        DomSingleQuery(
-          (ele) => ele.getQuerySelectorAttr(
-            selector: '.book-detail-cover',
-            attr: 'src',
-          ),
-        ),
-        DomSingleQuery(
-          (ele) => ele.getQuerySelectorText(selector: '#bookTitle'),
-        ),
-        DomSingleQuery(
-          (ele) => ele.getQuerySelectorHtml(selector: '#reader').cleanHtmlTag(),
-        ),
-      ],
+    return FetchItemResponse(
+      item: item,
+      list: website.detailQuery.getResult(html, hostUrl: website.url),
     );
-
-    final list = result.map((e) {
-      String result = e;
-      // url
-      if (e.startsWith('/')) {
-        result = ('${item.hostUrl}/$e').getNormalizeSlash.replaceAll(
-          ':/',
-          '://',
-        );
-      }
-      return FetchItemReturnData(
-        result: result,
-        type: result.startsWith('http')
-            ? FetchItemReturnDataType.image
-            : FetchItemReturnDataType.text,
-      );
-    }).toList();
-    return FetchItemResponse(item: item, list: list);
   }
 
   Future<String> _getCacheHtml(
@@ -141,6 +60,7 @@ class FetcherServices {
     } else {
       final res = await client.get(url);
       html = res.data.toString();
+      
       if (usedCache) {
         await respFile.writeAsString(html);
       }

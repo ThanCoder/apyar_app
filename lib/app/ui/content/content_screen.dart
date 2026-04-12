@@ -7,7 +7,6 @@ import 'package:t_widgets/functions/message_func.dart';
 import 'package:t_widgets/widgets/index.dart';
 import 'package:than_pkg/than_pkg.dart';
 
-
 class ContentScreen extends StatefulWidget {
   final Apyar apyar;
   const ContentScreen({super.key, required this.apyar});
@@ -33,24 +32,31 @@ class _ContentScreenState extends State<ContentScreen> {
 
   bool isLoading = false;
   bool isFullscreen = false;
-  ApyarContent? content;
+  List<ApyarContent> allContentList = [];
+  List<ApyarContent> contentList = [];
   List<String> textList = [];
+  int showContentListIndex = 0;
+
   final scrollController = ScrollController();
 
   void init() async {
+    ThanPkg.platform.toggleKeepScreen(isKeep: true);
+    await _loadChapterContent();
+  }
+
+  Future<void> _loadChapterContent() async {
     try {
       ThanPkg.platform.toggleKeepScreen(isKeep: true);
-
+      showContentListIndex = 0;
       setState(() {
-        content = null;
         isLoading = true;
       });
-      content = await ApyarServices.instance.getContentByApyarId(
+      allContentList = await ApyarServices.instance.getContentListByApyarId(
         widget.apyar.autoId,
       );
-
-      if (content != null) {
-        textList.addAll(content!.body.split('\n'));
+      allContentList.sort((a, b) => a.chapter.compareTo(b.chapter));
+      if (allContentList.isNotEmpty) {
+        contentList.add(allContentList.first);
       }
 
       if (!mounted) return;
@@ -73,7 +79,7 @@ class _ContentScreenState extends State<ContentScreen> {
         onDoubleTap: _toggleFullscreen,
         child: CustomScrollView(
           controller: scrollController,
-          slivers: [_getAppbar(), _getContent()],
+          slivers: [_getAppbar(), _getContent(), _showNextBtn()],
         ),
       ),
     );
@@ -96,7 +102,7 @@ class _ContentScreenState extends State<ContentScreen> {
     if (isLoading) {
       return SliverFillRemaining(child: Center(child: TLoader.random()));
     }
-    if (content == null) {
+    if (contentList.isEmpty) {
       return SliverFillRemaining(
         child: Center(child: Text('Content မရှိပါ!...')),
       );
@@ -106,14 +112,60 @@ class _ContentScreenState extends State<ContentScreen> {
 
   Widget _getTextList() {
     return SliverList.builder(
-      itemCount: textList.length,
-      itemBuilder: (context, index) {
-        final text = textList[index];
-        return Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 8),
-          child: Text(text, style: TextStyle(fontSize: 18)),
-        );
-      },
+      itemCount: contentList.length,
+      itemBuilder: (context, index) => _listItem(contentList[index]),
+    );
+  }
+
+  Widget _listItem(ApyarContent content) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 8),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'Chapter: `${content.chapter}`',
+            style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+          ),
+          Divider(),
+          SizedBox(height: 10),
+          Text(content.body, style: TextStyle(fontSize: 18)),
+        ],
+      ),
+    );
+  }
+
+  Widget _showNextBtn() {
+    return SliverToBoxAdapter(
+      child: (showContentListIndex + 1) > allContentList.length - 1
+          ? null
+          : InkWell(
+              onTap: () {
+                showContentListIndex++;
+                final next = allContentList[showContentListIndex];
+                contentList.add(next);
+                setState(() {});
+              },
+              child: Card(
+                child: Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    spacing: 4,
+                    children: [
+                      Text(
+                        'Next Chapter: `${allContentList[showContentListIndex].chapter + 1}`',
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      Center(child: Icon(Icons.next_plan)),
+                    ],
+                  ),
+                ),
+              ),
+            ),
     );
   }
 

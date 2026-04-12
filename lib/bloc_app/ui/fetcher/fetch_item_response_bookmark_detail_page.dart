@@ -93,11 +93,11 @@ class _FetchItemResponseBookmarkDetailPageState
   }
 
   void _addLocalDB() async {
-    final id = await context.read<ApyarListCubit>().add(
+    final newApyar = await context.read<ApyarListCubit>().add(
       Apyar(title: widget.item.item.title, date: DateTime.now()),
     );
     if (!mounted) return;
-    if (id == -1) {
+    if (newApyar == null) {
       showTMessageDialogError(
         context,
         'Database ထဲကို `Apyar` သွင်းလို့မရပါ!။\nError ရှိနေပါတယ်',
@@ -111,9 +111,9 @@ class _FetchItemResponseBookmarkDetailPageState
       contentBuf.writeln();
     }
     final contentId = await ApyarServices.instance.addContentByApyarId(
-      id,
+      newApyar.autoId,
       ApyarContent(
-        apyarId: id,
+        apyarId: newApyar.autoId,
         chapter: 1,
         body: contentBuf.toString(),
         date: DateTime.now(),

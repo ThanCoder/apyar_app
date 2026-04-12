@@ -1,9 +1,15 @@
+import 'package:apyar_app/bloc_app/cubits/apyar_list_cubit.dart';
+import 'package:apyar_app/bloc_app/ui/fetcher/f_website_types.dart';
 import 'package:apyar_app/bloc_app/ui/fetcher/fetch_item_response_bookmark_toggler.dart';
 import 'package:apyar_app/bloc_app/ui/fetcher/fetcher_types.dart';
 import 'package:apyar_app/components/cache_image.dart';
 import 'package:apyar_app/core/extensions/buildcontext_extensions.dart';
+import 'package:apyar_app/core/models/apyar.dart';
+import 'package:apyar_app/core/models/apyar_content.dart';
+import 'package:apyar_app/core/services/apyar_services.dart';
 import 'package:apyar_app/more_libs/setting/core/rabbit.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:t_widgets/t_widgets.dart';
 import 'package:than_pkg/than_pkg.dart';
 
@@ -11,7 +17,12 @@ import 'fetcher_services.dart';
 
 class FetchItemDetailScreen extends StatefulWidget {
   final FetchListItem item;
-  const FetchItemDetailScreen({super.key, required this.item});
+  final FWebsite website;
+  const FetchItemDetailScreen({
+    super.key,
+    required this.item,
+    required this.website,
+  });
 
   @override
   State<FetchItemDetailScreen> createState() => _FetchItemDetailScreenState();
@@ -44,6 +55,7 @@ class _FetchItemDetailScreenState extends State<FetchItemDetailScreen> {
 
       response = await FetcherServices.instance.fetchItemDetail(
         widget.item,
+        website: widget.website,
         usedCache: usedCache,
       );
 
@@ -185,6 +197,15 @@ class _FetchItemDetailScreenState extends State<FetchItemDetailScreen> {
               setState(() {});
             },
           ),
+        if (response != null)
+          ListTile(
+            leading: Icon(Icons.add),
+            title: Text('Add Local Database'),
+            onTap: () {
+              context.closeNavi();
+              _addLocalDB();
+            },
+          ),
       ],
     );
   }
@@ -205,5 +226,48 @@ class _FetchItemDetailScreenState extends State<FetchItemDetailScreen> {
     }).toList();
     response = response!.copyWith(list: list);
     setState(() {});
+  }
+
+  void _addLocalDB() async {
+    final list = response!.list;
+    final title = widget.item.title;
+
+    final newApyar = await context.read<ApyarListCubit>().add(
+      Apyar(title: title, date: DateTime.now()),
+    );
+    if (!mounted) return;
+    if (newApyar == null) {
+      showTMessageDialogError(
+        context,
+        'Database ထဲကို `Apyar` သွင်းလို့မရပါ!။\nError ရှိနေပါတယ်',
+      );
+      return;
+    }
+    final contentBuf = StringBuffer();
+    for (var item in list) {
+      if (item.type != FetchItemReturnDataType.text) continue;
+      contentBuf.writeln(item.result);
+      contentBuf.writeln();
+    }
+    final contentId = await ApyarServices.instance.addContentByApyarId(
+      newApyar.autoId,
+      ApyarContent(
+        apyarId: newApyar.autoId,
+        chapter: 1,
+        body: contentBuf.toString(),
+        date: DateTime.now(),
+      ),
+    );
+    if (!mounted) return;
+    if (contentId == -1) {
+      showTMessageDialogError(
+        context,
+        'Database ထဲကို `ApyarContent` သွင်းလို့မရပါ!။\nError ရှိနေပါတယ်',
+      );
+      return;
+    }
+
+    // success
+    showTSnackBar(context, 'Database ထဲကို သွင်းပြီးပါပြီ');
   }
 }

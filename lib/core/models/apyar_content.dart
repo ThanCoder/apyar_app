@@ -15,7 +15,7 @@ class ApyarContentAdapter extends TDAdapter<ApyarContent> {
   Map<String, dynamic> toMap(ApyarContent value) {
     return value.toMap();
   }
-  
+
   @override
   int getId(ApyarContent value) {
     return value.autoId;
