@@ -1,12 +1,12 @@
 import 'dart:io';
 
-import 'package:apyar_app/more_libs/setting/core/path_util.dart';
-import 'package:t_db/t_db.dart';
+import 'package:apyar_app/core/interfaces/db/database_interface.dart';
+import 'package:dart_core_extensions/dart_core_extensions.dart';
 import 'package:than_pkg/than_pkg.dart';
 
 class DatabaseServices {
   static String getLocalDatabasePath() {
-    return PathUtil.getDatabasePath(name: 'apyar.db');
+    return DatabaseInterface.getDatabasePath();
   }
 
   static bool isLocalDatabaseExists() {
@@ -22,10 +22,10 @@ class DatabaseServices {
   }
 
   static Future<bool> isDatabaseRecordExists() async {
-    final db = TDB.getInstance();
-    await db.open(DatabaseServices.getLocalDatabasePath());
-    // print('isDataRecordCreatedExists: ${db.isDataRecordCreatedExists}');
-    return db.isDataRecordCreatedExists;
+    if (dbFile().existsSync() && dbFile().getSize > 5) {
+      return true;
+    }
+    return false;
   }
 
   static Future<void> deleteAllDB() async {
@@ -35,6 +35,13 @@ class DatabaseServices {
     if (dbLockFile().existsSync()) {
       await dbLockFile().delete();
     }
+  }
+
+  static int getSize() {
+    if (dbFile().existsSync()) {
+      return dbFile().size;
+    }
+    return 0;
   }
 
   static File dbFile() => File(getLocalDatabasePath());

@@ -1,9 +1,9 @@
-import 'package:apyar_app/app/ui/home/bookmark_page.dart';
+import 'package:apyar_app/bloc_app/ui/home/bookmark_page.dart';
 import 'package:apyar_app/bloc_app/ui/fetcher/fetcher_home_page.dart';
 import 'package:apyar_app/core/extensions/buildcontext_extensions.dart';
 import 'package:flutter/material.dart';
-import 'package:apyar_app/app/ui/home/home_page.dart';
-import 'package:apyar_app/app/ui/home/more_app.dart';
+import 'package:apyar_app/bloc_app/ui/home/home_page.dart';
+import 'package:apyar_app/bloc_app/ui/home/more_app.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});

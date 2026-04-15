@@ -11,7 +11,7 @@ extension BuildcontextExtensions on BuildContext {
   }
 
   Brightness get platformBrightness {
-    return MediaQuery.of(this).platformBrightness;
+    return Theme.of(this).brightness;
   }
 
   bool get isBrightnessDark {

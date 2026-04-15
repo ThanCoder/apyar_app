@@ -1,5 +1,6 @@
 import 'package:apyar_app/app/ui/database_manager/add_local_database_list_tile.dart';
-import 'package:apyar_app/app/ui/database_manager/database_services.dart';
+import 'package:apyar_app/app/ui/database_manager/database_type.dart';
+import 'package:apyar_app/core/services/database_services.dart';
 import 'package:apyar_app/app/ui/database_manager/download_database_list_tile.dart';
 import 'package:flutter/material.dart';
 
@@ -48,39 +49,49 @@ class _DatabaseManagerScreenState extends State<DatabaseManagerScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: Text('Database Manager')),
-      body: isLoading
-          ? Center(child: TLoaderRandom())
-          : Stack(
-              children: [
-                Positioned.fill(
-                  child: TScrollableColumn(
-                    children: [_statusWidget(), Divider(), _actionWiget()],
+    return Theme(
+      data: ThemeData.dark(),
+      child: Scaffold(
+        appBar: AppBar(title: Text('Database Manager')),
+        body: isLoading
+            ? Center(child: TLoaderRandom())
+            : Stack(
+                children: [
+                  Positioned.fill(
+                    child: TScrollableColumn(
+                      children: [_statusWidget(), Divider(), _actionWiget()],
+                    ),
                   ),
-                ),
-                // button
-                // Positioned(bottom: 0, right: 0, child: _nextBtn()),
-              ],
-            ),
+                  // button
+                  // Positioned(bottom: 0, right: 0, child: _nextBtn()),
+                ],
+              ),
+      ),
     );
   }
 
   Widget _statusWidget() {
-    return ListTile(
-      title: Text(
-        DatabaseServices.isLocalDatabaseExists()
-            ? 'Database မှာ Data ရှိနေပါတယ်'
-            : 'Database မရှိပါ',
-      ),
-      trailing: Icon(
-        color: DatabaseServices.isLocalDatabaseExists()
-            ? Colors.green
-            : Colors.red,
-        DatabaseServices.isLocalDatabaseExists()
-            ? Icons.check
-            : Icons.check_box_outline_blank,
-      ),
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        ListTile(
+          title: Text(
+            DatabaseServices.isLocalDatabaseExists()
+                ? 'Database မှာ Data ရှိနေပါတယ်'
+                : 'Database မရှိပါ',
+          ),
+          trailing: Icon(
+            color: DatabaseServices.isLocalDatabaseExists()
+                ? Colors.green
+                : Colors.red,
+            DatabaseServices.isLocalDatabaseExists()
+                ? Icons.check
+                : Icons.check_box_outline_blank,
+          ),
+        ),
+        Divider(),
+        DatabaseType(callInit: init),
+      ],
     );
   }
 
@@ -91,10 +102,15 @@ class _DatabaseManagerScreenState extends State<DatabaseManagerScreen> {
         final existsDB = snapshot.data ?? false;
         return Column(
           children: [
-            Text(
-              existsDB ? 'Database ရှိနေပါတယ်' : 'Database is Empty',
-              style: TextStyle(fontSize: 18),
-            ),
+            existsDB
+                ? Text(
+                    'Database ရှိနေပါတယ်',
+                    style: TextStyle(fontSize: 18, color: Colors.green),
+                  )
+                : Text(
+                    'Database is မရှိပါ Or Data သွင်းရပါမယ်',
+                    style: TextStyle(fontSize: 18, color: Colors.yellow),
+                  ),
             DownloadDatabaseListTile(onCheckDB: init),
             AddLocalDatabaseListTile(onCheckDB: init),
 

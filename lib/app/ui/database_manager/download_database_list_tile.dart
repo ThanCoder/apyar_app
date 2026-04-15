@@ -1,6 +1,7 @@
 import 'dart:async';
 
-import 'package:apyar_app/app/ui/database_manager/database_services.dart';
+import 'package:apyar_app/core/interfaces/db/database_interface.dart';
+import 'package:apyar_app/core/services/database_services.dart';
 import 'package:flutter/material.dart';
 import 'package:t_client/t_client.dart';
 import 'package:t_widgets/t_widgets.dart';
@@ -47,6 +48,13 @@ class _DownloadDatabaseListTileState extends State<DownloadDatabaseListTile> {
     _download();
   }
 
+  String _getDBUrl() {
+    if (DatabaseInterface.getDBType() == ApyarDBType.smdb) {
+      return 'https://github.com/ThanCoder/apyar_app/releases/download/smdb.db/apyar.apyd.db';
+    }
+    return 'https://github.com/ThanCoder/apyar_app/releases/download/database.v1/apyar.v1.db';
+  }
+
   void _download() async {
     await DatabaseServices.deleteAllDB();
 
@@ -56,9 +64,7 @@ class _DownloadDatabaseListTileState extends State<DownloadDatabaseListTile> {
       barrierDismissible: false,
       builder: (context) => TMultiDownloaderDialog(
         manager: DatabaseDownloadManager(),
-        urls: [
-          'https://github.com/ThanCoder/apyar_app/releases/download/database.v1/apyar.v1.db',
-        ],
+        urls: [_getDBUrl()],
         onSuccess: widget.onCheckDB,
         onError: (message) => widget.onCheckDB(),
       ),

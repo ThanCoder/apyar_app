@@ -15,9 +15,12 @@ class ApyarListCubit extends Cubit<ApyarListCubitState> {
 
   Future<void> init() async {
     try {
+      if (state.isLoading) return;
       emit(state.copyWith(list: [], isLoading: true, errorMessage: ''));
 
-      final list = await _service.getAll();
+      await _service.getApyarDB().init();
+
+      final list = await _service.getApyarDB().getAll();
 
       emit(state.copyWith(isLoading: false, list: list));
       sort();
@@ -30,13 +33,13 @@ class ApyarListCubit extends Cubit<ApyarListCubitState> {
     try {
       final list = state.list;
       // remove db
-      final id = await _service.add(apyar);
-      final newApyar =  apyar.copyWith(autoId: id);
+      final value = await _service.getApyarDB().add(apyar);
+      if (value == null) return null;
 
-      list.insert(0,newApyar);
+      list.insert(0, value);
 
       emit(state.copyWith(list: list, errorMessage: ''));
-      return newApyar;
+      return value;
     } catch (e) {
       emit(state.copyWith(errorMessage: e.toString()));
       return null;
@@ -50,14 +53,35 @@ class ApyarListCubit extends Cubit<ApyarListCubitState> {
       if (index == -1) return;
       list.removeAt(index);
       // remove db
-      await _service.deleteById(apyar.autoId);
+      await _service.getApyarDB().deleteById(apyar.autoId);
       //remove bookmark
       bookmark.delete(apyar);
-      
+
       emit(state.copyWith(list: list, errorMessage: ''));
     } catch (e) {
       emit(state.copyWith(errorMessage: e.toString()));
     }
+  }
+
+  Future<void> update(Apyar apyar) async {
+    try {
+      final index = state.list.indexWhere((e) => e.id == apyar.id);
+      if (index == -1) return;
+      await _service.getApyarDB().updateById(apyar.id, apyar);
+      state.list[index] = apyar;
+
+      emit(state.copyWith(list: state.list, errorMessage: ''));
+    } catch (e) {
+      emit(state.copyWith(errorMessage: e.toString()));
+    }
+  }
+
+  bool exists(Apyar apyar) {
+    final index = state.list.indexWhere(
+      (e) => e.id == apyar.id || e.autoId == apyar.autoId,
+    );
+    // print('${apyar.title} : $index');
+    return index != -1;
   }
 
   // sort
@@ -69,7 +93,7 @@ class ApyarListCubit extends Cubit<ApyarListCubitState> {
 
   void sort() {
     if (state.sortId == TSort.getDateId) {
-      state.list.sortDate(isNewest: !state.sortAsc);
+      state.list.sortDate(isNewest: state.sortAsc);
     }
     if (state.sortId == TSort.getTitleId) {
       state.list.sortTitle(isAToZ: state.sortAsc);
@@ -103,7 +127,7 @@ class ApyarListCubitState {
       sortList: TSort.getDefaultList,
       sortAsc: TRecentDB.getInstance.getBool(
         'apyar_list_sort_isAsc',
-        def: false,
+        def: true,
       ),
       sortId: TRecentDB.getInstance.getInt(
         'apyar_list_sort_id',

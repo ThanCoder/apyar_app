@@ -249,8 +249,7 @@ class _FetchItemDetailScreenState extends State<FetchItemDetailScreen> {
       contentBuf.writeln(item.result);
       contentBuf.writeln();
     }
-    final contentId = await ApyarServices.instance.addContentByApyarId(
-      newApyar.autoId,
+    final content = await ApyarServices.instance.getContentDB().add(
       ApyarContent(
         apyarId: newApyar.autoId,
         chapter: 1,
@@ -259,7 +258,7 @@ class _FetchItemDetailScreenState extends State<FetchItemDetailScreen> {
       ),
     );
     if (!mounted) return;
-    if (contentId == -1) {
+    if (content == null) {
       showTMessageDialogError(
         context,
         'Database ထဲကို `ApyarContent` သွင်းလို့မရပါ!။\nError ရှိနေပါတယ်',

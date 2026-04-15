@@ -1,3 +1,5 @@
+// ignore_for_file: unused_element
+
 import 'dart:io';
 
 import 'package:dart_core_extensions/dart_core_extensions.dart';
@@ -7,13 +9,11 @@ import 'package:db_creator/smdb_models/apyar.dart';
 import 'package:db_creator/smdb_models/apyar_content.dart';
 
 void main(List<String> arguments) async {
-  await ApyarSmdbServices.instance.init();
-
   final dir = Directory('smdb_files');
   if (!dir.existsSync()) {
     await dir.create();
   }
-  // await _extractAllFromSmdb(dir);
+  await _extractAllFromSmdb(dir);
 }
 
 Future<void> _extractAllFromSmdb(Directory dir) async {
@@ -31,7 +31,7 @@ Future<void> _extractAllFromSmdb(Directory dir) async {
       continue;
     }
     print(apyar.title);
-    await File('${dir.path}/${apyar.title}').writeAsString(content.body);
+    // await File('${dir.path}/${apyar.title}').writeAsString(content.body);
     print('Progress: $i-${list.length}');
     // break;
   }

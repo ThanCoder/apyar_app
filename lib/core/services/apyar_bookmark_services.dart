@@ -15,7 +15,7 @@ class ApyarBookmarkServices {
   bool dBFileHasData() => dbFile.existsSync() && dbFile.lengthSync() > 0;
 
   Future<void> setAll(List<Apyar> list) async {
-    final contents = list.map((e) => e.toMap()).toList();
+    final contents = list.map((e) => e.toJson()).toList();
     await dbFile.writeAsString(jsonEncode(contents));
   }
 
@@ -24,6 +24,6 @@ class ApyarBookmarkServices {
     final source = await dbFile.readAsString();
     if (source.isEmpty) return [];
     List<dynamic> resList = jsonDecode(source);
-    return resList.map((e) => Apyar.fromMap(e)).toList();
+    return resList.map((e) => Apyar.fromJson(e)).toList();
   }
 }

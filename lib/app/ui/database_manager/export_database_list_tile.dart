@@ -1,7 +1,7 @@
 import 'dart:async';
 import 'dart:io';
 
-import 'package:apyar_app/app/ui/database_manager/database_services.dart';
+import 'package:apyar_app/core/services/database_services.dart';
 import 'package:apyar_app/more_libs/setting/core/path_util.dart';
 import 'package:dart_core_extensions/dart_core_extensions.dart';
 import 'package:flutter/material.dart';
@@ -23,9 +23,7 @@ class _ExportDatabaseListTileState extends State<ExportDatabaseListTile> {
     return Card(
       child: ListTile(
         title: Text('Export Database'),
-        subtitle: Text(
-          'Size: ${DatabaseServices.dbFile().lengthSync().fileSizeLabel()}',
-        ),
+        subtitle: Text('Size: ${DatabaseServices.getSize().fileSizeLabel()}'),
         onTap: _export,
       ),
     );

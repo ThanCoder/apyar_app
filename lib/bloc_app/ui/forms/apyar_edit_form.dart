@@ -1,8 +1,10 @@
+import 'package:apyar_app/bloc_app/cubits/apyar_list_cubit.dart';
 import 'package:apyar_app/core/models/apyar.dart';
 import 'package:apyar_app/core/models/apyar_content.dart';
 import 'package:apyar_app/core/services/apyar_services.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:t_widgets/t_widgets.dart';
 
 class ApyarEditForm extends StatefulWidget {
@@ -56,9 +58,11 @@ class _ApyarEditFormState extends State<ApyarEditForm> {
         isContentLoading = true;
       });
 
-      content = await _services.getContentByApyarId(
-        widget.apyar.autoId,
-        chapter: int.parse(chapterController.text),
+      content = await _services.getContentDB().getOne(
+        (value) =>
+            value.apyarId == widget.apyar.autoId &&
+            value.chapter == int.parse(chapterController.text),
+        parentId: widget.apyar.id,
       );
       if (!mounted) return;
       setState(() {
@@ -81,7 +85,9 @@ class _ApyarEditFormState extends State<ApyarEditForm> {
     return Scaffold(
       appBar: AppBar(
         title: Text('Edit: ${widget.apyar.title}'),
-        actions: [IconButton(onPressed: _saveApyar, icon: Icon(Icons.save_as))],
+        actions: [
+          IconButton(onPressed: _updateApyar, icon: Icon(Icons.save_as)),
+        ],
       ),
       body: isLoading
           ? Center(child: TLoaderRandom())
@@ -189,8 +195,12 @@ class _ApyarEditFormState extends State<ApyarEditForm> {
           date: DateTime.now(),
         );
       }
-
-      await _services.setContentByApyarId(widget.apyar.autoId, newContent);
+      if (content == null) {
+        await _services.getContentDB().add(newContent);
+      } else {
+        //update
+        await _services.getContentDB().updateById(content!.id, newContent);
+      }
 
       if (!mounted) return;
       setState(() {
@@ -206,22 +216,24 @@ class _ApyarEditFormState extends State<ApyarEditForm> {
       setState(() {
         isUpdating = false;
       });
-      showTMessageDialogError(context, e.toString());
+      showTMessageDialogError(context, title: Text('_save'), e.toString());
     }
   }
 
-  void _saveApyar() async {
+  void _updateApyar() async {
     try {
       setState(() {
         isLoading = true;
       });
       apyar = apyar.copyWith(title: titleController.text, date: DateTime.now());
-      await _services.updateById(apyar.autoId, apyar);
+      // await _services.getApyarDB().updateById(apyar.id, apyar);
+      await context.read<ApyarListCubit>().update(apyar);
 
       if (!mounted) return;
       setState(() {
         isLoading = false;
       });
+      showTSnackBar(context, 'Apyar Updated');
     } catch (e) {
       if (!mounted) return;
       setState(() {

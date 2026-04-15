@@ -40,7 +40,7 @@ class ApyarSmdbServices {
     return await _box.add(apyar);
   }
 
-  Future<Apyar?> updateById(int id, Apyar apyar) async {
+  Future<bool> updateById(int id, Apyar apyar) async {
     return await _box.updateById(id, value: apyar);
   }
 
@@ -63,10 +63,7 @@ class ApyarSmdbServices {
     return await _contentBox.add(value);
   }
 
-  Future<ApyarContent?> updateContentByApyarId(
-    int id,
-    ApyarContent value,
-  ) async {
+  Future<bool> updateContentByApyarId(int id, ApyarContent value) async {
     return await _contentBox.updateById(id, value: value);
   }
 

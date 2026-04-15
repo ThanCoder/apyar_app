@@ -1,10 +1,10 @@
+import 'package:apyar_app/core/extensions/buildcontext_extensions.dart';
 import 'package:apyar_app/core/models/apyar.dart';
 import 'package:apyar_app/core/models/apyar_content.dart';
 import 'package:apyar_app/app/ui/components/bookmark_toggle_widget.dart';
 import 'package:apyar_app/core/services/apyar_services.dart';
 import 'package:flutter/material.dart';
-import 'package:t_widgets/functions/message_func.dart';
-import 'package:t_widgets/widgets/index.dart';
+import 'package:t_widgets/t_widgets.dart';
 import 'package:than_pkg/than_pkg.dart';
 
 class ContentScreen extends StatefulWidget {
@@ -19,7 +19,7 @@ class _ContentScreenState extends State<ContentScreen> {
   @override
   void initState() {
     super.initState();
-    init();
+    WidgetsBinding.instance.addPostFrameCallback((_) => init());
   }
 
   @override
@@ -36,12 +36,20 @@ class _ContentScreenState extends State<ContentScreen> {
   List<ApyarContent> contentList = [];
   List<String> textList = [];
   int showContentListIndex = 0;
+  int fontSize = 18;
 
   final scrollController = ScrollController();
 
   void init() async {
     ThanPkg.platform.toggleKeepScreen(isKeep: true);
     await _loadChapterContent();
+    _initSettingConfig();
+  }
+
+  void _initSettingConfig() {
+    fontSize = TRecentDB.getInstance.getInt('apyar_content_font_size', def: 18);
+    if (!mounted) return;
+    setState(() {});
   }
 
   Future<void> _loadChapterContent() async {
@@ -51,8 +59,8 @@ class _ContentScreenState extends State<ContentScreen> {
       setState(() {
         isLoading = true;
       });
-      allContentList = await ApyarServices.instance.getContentListByApyarId(
-        widget.apyar.autoId,
+      allContentList = await ApyarServices.instance.getContentDB().getAll(
+        parentId: widget.apyar.autoId,
       );
       allContentList.sort((a, b) => a.chapter.compareTo(b.chapter));
       if (allContentList.isNotEmpty) {
@@ -77,6 +85,8 @@ class _ContentScreenState extends State<ContentScreen> {
     return Scaffold(
       body: GestureDetector(
         onDoubleTap: _toggleFullscreen,
+        onLongPress: _showMenu,
+        onSecondaryTap: _showMenu,
         child: CustomScrollView(
           controller: scrollController,
           slivers: [_getAppbar(), _getContent(), _showNextBtn()],
@@ -107,10 +117,6 @@ class _ContentScreenState extends State<ContentScreen> {
         child: Center(child: Text('Content မရှိပါ!...')),
       );
     }
-    return _getTextList();
-  }
-
-  Widget _getTextList() {
     return SliverList.builder(
       itemCount: contentList.length,
       itemBuilder: (context, index) => _listItem(contentList[index]),
@@ -125,11 +131,14 @@ class _ContentScreenState extends State<ContentScreen> {
         children: [
           Text(
             'Chapter: `${content.chapter}`',
-            style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+            style: TextStyle(
+              fontSize: fontSize.toDouble(),
+              fontWeight: FontWeight.bold,
+            ),
           ),
           Divider(),
           SizedBox(height: 10),
-          Text(content.body, style: TextStyle(fontSize: 18)),
+          Text(content.body, style: TextStyle(fontSize: fontSize.toDouble())),
         ],
       ),
     );
@@ -173,5 +182,79 @@ class _ContentScreenState extends State<ContentScreen> {
     isFullscreen = !isFullscreen;
     ThanPkg.platform.toggleFullScreen(isFullScreen: isFullscreen);
     setState(() {});
+  }
+
+  void _showMenu() {
+    showTMenuBottomSheetSingle(
+      context,
+      title: Text('Setting'),
+      child: _MainMenu(onDone: _initSettingConfig),
+    );
+  }
+}
+
+class _MainMenu extends StatefulWidget {
+  final void Function() onDone;
+  const _MainMenu({required this.onDone});
+
+  @override
+  State<_MainMenu> createState() => _MainMenuState();
+}
+
+class _MainMenuState extends State<_MainMenu> {
+  @override
+  void initState() {
+    init();
+    super.initState();
+  }
+
+  @override
+  void dispose() {
+    fontController.dispose();
+    super.dispose();
+  }
+
+  final fontController = TextEditingController();
+  void init() {
+    fontController.text = TRecentDB.getInstance
+        .getInt('apyar_content_font_size', def: 18)
+        .toString();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.all(8.0),
+      child: TScrollableColumn(
+        children: [
+          TNumberField(
+            label: Text('Font Size'),
+            maxLines: 1,
+            controller: fontController,
+          ),
+          SizedBox(height: 20),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.end,
+            children: [TextButton(onPressed: _save, child: Text('သိမ်းမယ်'))],
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _save() async {
+    try {
+      await TRecentDB.getInstance.putInt(
+        'apyar_content_font_size',
+        int.parse(fontController.text),
+      );
+
+      if (!mounted) return;
+      context.closeNavi();
+      widget.onDone();
+    } catch (e) {
+      if (!mounted) return;
+      showTMessageDialogError(context, e.toString());
+    }
   }
 }

@@ -1,34 +1,12 @@
-import 'package:t_db/t_db.dart';
-
-class ApyarContentAdapter extends TDAdapter<ApyarContent> {
-  @override
-  ApyarContent fromMap(Map<String, dynamic> map) {
-    return ApyarContent.fromMap(map);
-  }
-
-  @override
-  int getUniqueFieldId() {
-    return 2;
-  }
-
-  @override
-  Map<String, dynamic> toMap(ApyarContent value) {
-    return value.toMap();
-  }
-
-  @override
-  int getId(ApyarContent value) {
-    return value.autoId;
-  }
-}
-
 class ApyarContent {
+  final int id;
   final int autoId;
   final int apyarId;
   final int chapter;
   final String body;
   final DateTime date;
   ApyarContent({
+    this.id = 0,
     this.autoId = 0,
     required this.apyarId,
     required this.chapter,
@@ -36,7 +14,13 @@ class ApyarContent {
     required this.date,
   });
 
+  @override
+  String toString() {
+    return 'ID: $autoId - apyarID: $apyarId';
+  }
+
   ApyarContent copyWith({
+    int? id,
     int? autoId,
     int? apyarId,
     int? chapter,
@@ -44,6 +28,7 @@ class ApyarContent {
     DateTime? date,
   }) {
     return ApyarContent(
+      id: id ?? this.id,
       autoId: autoId ?? this.autoId,
       apyarId: apyarId ?? this.apyarId,
       chapter: chapter ?? this.chapter,
@@ -52,8 +37,9 @@ class ApyarContent {
     );
   }
 
-  Map<String, dynamic> toMap() {
-    return <String, dynamic>{
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
       'autoId': autoId,
       'apyarId': apyarId,
       'chapter': chapter,
@@ -62,18 +48,14 @@ class ApyarContent {
     };
   }
 
-  factory ApyarContent.fromMap(Map<String, dynamic> map) {
+  factory ApyarContent.fromJson(Map<String, dynamic> json) {
     return ApyarContent(
-      autoId: map['autoId'] as int,
-      apyarId: map['apyarId'] as int,
-      chapter: map['chapter'] as int,
-      body: map['body'] as String,
-      date: DateTime.fromMillisecondsSinceEpoch(map['date'] as int),
+      id: json['id'] ?? 0,
+      autoId: json['autoId'] ?? 0,
+      apyarId: json['apyarId'],
+      chapter: json['chapter'],
+      body: json['body'],
+      date: DateTime.fromMillisecondsSinceEpoch(json['date']),
     );
-  }
-
-  @override
-  String toString() {
-    return 'ID: $autoId - apyarID: $apyarId';
   }
 }

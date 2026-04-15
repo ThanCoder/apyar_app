@@ -1,6 +1,6 @@
 import 'dart:io';
 
-import 'package:apyar_app/app/ui/database_manager/database_services.dart';
+import 'package:apyar_app/core/services/database_services.dart';
 import 'package:file_selector/file_selector.dart';
 import 'package:flutter/material.dart';
 import 'package:t_widgets/t_widgets.dart';
@@ -37,7 +37,7 @@ class _AddLocalDatabaseListTileState extends State<AddLocalDatabaseListTile> {
 
       final res = await openFile(
         acceptedTypeGroups: [
-          XTypeGroup(label: 'Database File', extensions: ['db']),
+          XTypeGroup(label: 'Database File', extensions: ['db', 'smdb']),
         ],
       );
       if (res == null) return;
