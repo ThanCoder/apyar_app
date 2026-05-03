@@ -29,7 +29,7 @@ class ApyarSmdbDatabase extends DatabaseInterface<Apyar> {
 
   @override
   Future<bool> updateById(int id, Apyar value) async {
-    return await _box.updateById(id, value);
+    return await _box.updateById(id, value: value);
   }
 
   @override

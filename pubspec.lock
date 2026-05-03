@@ -496,10 +496,11 @@ packages:
   sm_db:
     dependency: "direct main"
     description:
-      path: "/home/thancoder/projects/plugins/sm_db"
-      relative: false
-    source: path
-    version: "0.2.3"
+      name: sm_db
+      sha256: "751f90aa7a80c79ddbed849b534ef70e2b26f2bbc0644e3054c1e7b36a804102"
+      url: "https://pub.dev"
+    source: hosted
+    version: "0.2.2"
   source_span:
     dependency: transitive
     description:

@@ -2,7 +2,7 @@ import 'package:apyar_app/core/models/apyar.dart';
 import 'package:apyar_app/core/models/apyar_content.dart';
 import 'package:sm_db/sm_db.dart';
 
-class ApyarSmdbAdapter extends SMDBJsonAdapter<Apyar> {
+class ApyarSmdbAdapter extends JsonDBAdapter<Apyar> {
   @override
   Apyar fromMap(Map<String, dynamic> map) {
     return Apyar.fromJson(map);
@@ -19,10 +19,10 @@ class ApyarSmdbAdapter extends SMDBJsonAdapter<Apyar> {
   }
 
   @override
-  int get adapterTypeId => 1;
+  int get getUniqueFieldId => 1;
 }
 
-class ApyarContentSmdbAdapter extends SMDBJsonAdapter<ApyarContent> {
+class ApyarContentSmdbAdapter extends JsonDBAdapter<ApyarContent> {
   @override
   ApyarContent fromMap(Map<String, dynamic> map) {
     return ApyarContent.fromJson(map);
@@ -34,7 +34,7 @@ class ApyarContentSmdbAdapter extends SMDBJsonAdapter<ApyarContent> {
   }
 
   @override
-  int get adapterTypeId => 2;
+  int get getUniqueFieldId => 2;
 
   @override
   Map<String, dynamic> toMap(ApyarContent value) {

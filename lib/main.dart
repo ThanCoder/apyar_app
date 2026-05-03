@@ -3,13 +3,11 @@ import 'package:apyar_app/bloc_app/cubits/apyar_list_cubit.dart';
 import 'package:apyar_app/bloc_app/cubits/fetch_item_response_cubit.dart';
 import 'package:apyar_app/core/models/apyar.dart';
 import 'package:apyar_app/core/models/apyar_content.dart';
-import 'package:apyar_app/core/models/smdb_adapters.dart';
 import 'package:apyar_app/core/models/tdb_adapters.dart';
 
 import 'package:apyar_app/more_libs/setting/core/path_util.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:sm_db/sm_db.dart';
 import 'package:t_db/t_db.dart';
 import 'package:t_widgets/t_widgets.dart';
 import 'package:than_pkg/than_pkg.dart';
@@ -68,9 +66,9 @@ void main() async {
   tdb.setAdapterNotExists<Apyar>(ApyarTdbAdapter());
   tdb.setAdapterNotExists<ApyarContent>(ApyarContentTdbAdapter());
 
-  final smdb = SMDB.getInstance();
-  smdb.registerAdapterNotExists<Apyar>(ApyarSmdbAdapter());
-  smdb.registerAdapterNotExists<ApyarContent>(ApyarContentSmdbAdapter());
+  // final smdb = SMDB.getInstance();
+  // smdb.registerAdapterNotExists<Apyar>(ApyarSmdbAdapter());
+  // smdb.registerAdapterNotExists<ApyarContent>(ApyarContentSmdbAdapter());
 
   runApp(
     MultiBlocProvider(
