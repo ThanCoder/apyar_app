@@ -132,9 +132,11 @@ packages:
   dual_store:
     dependency: "direct main"
     description:
-      path: "/home/thancoder/projects/plugins/dual_store"
-      relative: false
-    source: path
+      path: "."
+      ref: HEAD
+      resolved-ref: d79475488bb7621ee5b04903d58bc79a35fb98ea
+      url: "https://github.com/ThanCoder/dual_store"
+    source: git
     version: "0.1.0"
   fake_async:
     dependency: transitive
