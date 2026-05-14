@@ -1,18 +1,18 @@
 import 'package:t_db/t_db.dart';
 
-class ApyarContentAdapter extends TDAdapter<ApyarContent> {
+class ApyarContentAdapter extends TDAdapter<Content> {
   @override
-  ApyarContent fromMap(Map<String, dynamic> map) {
-    return ApyarContent.fromMap(map);
+  Content fromMap(Map<String, dynamic> map) {
+    return Content.fromMap(map);
   }
 
   @override
-  Map<String, dynamic> toMap(ApyarContent value) {
+  Map<String, dynamic> toMap(Content value) {
     return value.toMap();
   }
 
   @override
-  int getId(ApyarContent value) {
+  int getId(Content value) {
     return value.id;
   }
 
@@ -20,13 +20,13 @@ class ApyarContentAdapter extends TDAdapter<ApyarContent> {
   int getUniqueFieldId() => 2;
 }
 
-class ApyarContent {
+class Content {
   final int id;
   final int apyarId;
   final int chapter;
   final String body;
   final DateTime date;
-  ApyarContent({
+  Content({
     this.id = 0,
     required this.apyarId,
     required this.chapter,
@@ -34,14 +34,14 @@ class ApyarContent {
     required this.date,
   });
 
-  ApyarContent copyWith({
+  Content copyWith({
     int? id,
     int? apyarId,
     int? chapter,
     String? body,
     DateTime? date,
   }) {
-    return ApyarContent(
+    return Content(
       id: id ?? this.id,
       apyarId: apyarId ?? this.apyarId,
       chapter: chapter ?? this.chapter,
@@ -60,8 +60,8 @@ class ApyarContent {
     };
   }
 
-  factory ApyarContent.fromMap(Map<String, dynamic> map) {
-    return ApyarContent(
+  factory Content.fromMap(Map<String, dynamic> map) {
+    return Content(
       id: map['id'] as int,
       apyarId: map['apyarId'] as int,
       chapter: map['chapter'] as int,

@@ -9,10 +9,10 @@ class ApyarTdbServices {
   final db = TDB.getInstance();
 
   TDBox<Apyar> get box => db.getBox<Apyar>();
-  TDBox<ApyarContent> get contentBox => db.getBox<ApyarContent>();
+  TDBox<Content> get contentBox => db.getBox<Content>();
   Future<void> init() async {
     db.setAdapterNotExists<Apyar>(ApyarAdapter());
-    db.setAdapterNotExists<ApyarContent>(ApyarContentAdapter());
+    db.setAdapterNotExists<Content>(ApyarContentAdapter());
     await db.open('/home/thancoder/Downloads/Apyar App/apyar.db');
   }
 }

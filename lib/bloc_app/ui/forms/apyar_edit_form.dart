@@ -1,7 +1,8 @@
 import 'package:apyar_app/bloc_app/cubits/apyar_list_cubit.dart';
 import 'package:apyar_app/core/models/apyar.dart';
-import 'package:apyar_app/core/models/apyar_content.dart';
+import 'package:apyar_app/core/models/content.dart';
 import 'package:apyar_app/core/services/apyar_services.dart';
+import 'package:apyar_app/core/services/dual_store_services.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -42,35 +43,33 @@ class _ApyarEditFormState extends State<ApyarEditForm> {
   bool isLoading = false;
   bool isContentLoading = false;
   bool isUpdating = false;
-  ApyarContent? content;
   late Apyar apyar;
-  final _services = ApyarServices.instance;
+  late DualStoreServices store;
 
   void init() async {
+    store = await ApyarServices.instance.getDualStore();
     _loadChapterContent();
   }
 
   void _loadChapterContent() async {
     try {
-      content = null;
       contentController.text = '';
       setState(() {
         isContentLoading = true;
       });
-
-      content = await _services.getContentDB().getOne(
+      final content = await store.contentBox.getOne(
         (value) =>
-            value.apyarId == widget.apyar.autoId &&
-            value.chapter == int.parse(chapterController.text),
-        parentId: widget.apyar.id,
+            value.apyarId == widget.apyar.id &&
+            value.chapter == (int.tryParse(chapterController.text) ?? 1),
       );
+      if (content != null) {
+        final bigString = await store.contentBox.readBigDataAsString(content);
+        contentController.text = bigString ?? '';
+      }
       if (!mounted) return;
       setState(() {
         isContentLoading = false;
       });
-      if (content != null) {
-        contentController.text = content!.body;
-      }
     } catch (e) {
       if (!mounted) return;
       setState(() {
@@ -181,25 +180,26 @@ class _ApyarEditFormState extends State<ApyarEditForm> {
       setState(() {
         isUpdating = true;
       });
-      late ApyarContent newContent;
-      if (content != null) {
-        newContent = content!.copyWith(
-          chapter: int.parse(chapterController.text),
-          body: contentController.text,
-        );
-      } else {
-        newContent = ApyarContent(
-          apyarId: widget.apyar.autoId,
-          chapter: int.parse(chapterController.text),
-          body: contentController.text,
-          date: DateTime.now(),
-        );
-      }
+      final content = await store.contentBox.getOne(
+        (value) =>
+            value.apyarId == widget.apyar.id &&
+            value.chapter == (int.tryParse(chapterController.text) ?? 1),
+      );
       if (content == null) {
-        await _services.getContentDB().add(newContent);
+        await store.contentBox.addWithBigDataString(
+          Content(
+            apyarId: widget.apyar.id,
+            chapter: int.parse(chapterController.text),
+          ),
+          bigString: contentController.text,
+        );
       } else {
         //update
-        await _services.getContentDB().updateById(content!.id, newContent);
+        await store.contentBox.updateByIdWithBigString(
+          content.id,
+          content.copyWith(chapter: int.parse(chapterController.text)),
+          bigString: contentController.text,
+        );
       }
 
       if (!mounted) return;

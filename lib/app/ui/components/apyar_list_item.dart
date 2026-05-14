@@ -21,8 +21,8 @@ class ApyarListItem extends StatelessWidget {
 
     return InkWell(
       mouseCursor: !exists ? null : SystemMouseCursors.click,
-      onSecondaryTap: !exists ? null : () => onRightClicked?.call(apyar),
-      onLongPress: !exists ? null : () => onRightClicked?.call(apyar),
+      onSecondaryTap: () => onRightClicked?.call(apyar),
+      onLongPress: () => onRightClicked?.call(apyar),
       child: ListTile(
         title: Text(apyar.title),
         trailing: !exists ? null : BookmarkToggleWidget(apyar: apyar),

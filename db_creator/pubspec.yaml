@@ -15,9 +15,13 @@ dependencies:
 
   t_db:
     path: /home/thancoder/projects/plugins/t_db
+  dual_store:
+    path: /home/thancoder/projects/plugins/dual_store
   # sm_db:
   #   path: /home/thancoder/projects/plugins/sm_db
   dart_core_extensions: ^0.1.1
+  chapters_db:
+    path: /home/thancoder/projects/plugins/chapters_db
 
 dev_dependencies:
   lints: ^6.0.0

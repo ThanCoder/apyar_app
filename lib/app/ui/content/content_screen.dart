@@ -1,8 +1,9 @@
 import 'package:apyar_app/core/extensions/buildcontext_extensions.dart';
 import 'package:apyar_app/core/models/apyar.dart';
-import 'package:apyar_app/core/models/apyar_content.dart';
 import 'package:apyar_app/app/ui/components/bookmark_toggle_widget.dart';
+import 'package:apyar_app/core/models/content.dart';
 import 'package:apyar_app/core/services/apyar_services.dart';
+import 'package:apyar_app/core/services/dual_store_services.dart';
 import 'package:flutter/material.dart';
 import 'package:t_widgets/t_widgets.dart';
 import 'package:than_pkg/than_pkg.dart';
@@ -32,11 +33,12 @@ class _ContentScreenState extends State<ContentScreen> {
 
   bool isLoading = false;
   bool isFullscreen = false;
-  List<ApyarContent> allContentList = [];
-  List<ApyarContent> contentList = [];
+  List<Content> allContentList = [];
+  List<Content> showContentList = [];
   List<String> textList = [];
   int showContentListIndex = 0;
   int fontSize = 18;
+  DualStoreServices? store;
 
   final scrollController = ScrollController();
 
@@ -56,15 +58,23 @@ class _ContentScreenState extends State<ContentScreen> {
     try {
       ThanPkg.platform.toggleKeepScreen(isKeep: true);
       showContentListIndex = 0;
+      showContentList.clear();
+
       setState(() {
         isLoading = true;
       });
-      allContentList = await ApyarServices.instance.getContentDB().getAll(
-        parentId: widget.apyar.autoId,
+      store = await ApyarServices.instance.getDualStore();
+      allContentList = await store!.contentBox.find(
+        (value) => value.apyarId == widget.apyar.id,
       );
       allContentList.sort((a, b) => a.chapter.compareTo(b.chapter));
+
       if (allContentList.isNotEmpty) {
-        contentList.add(allContentList.first);
+        final res = await store?.contentBox.readBigDataAsString(
+          allContentList.first,
+        );
+        showContentList.add(allContentList.first);
+        textList.add(res ?? '');
       }
 
       if (!mounted) return;
@@ -112,33 +122,44 @@ class _ContentScreenState extends State<ContentScreen> {
     if (isLoading) {
       return SliverFillRemaining(child: Center(child: TLoader.random()));
     }
-    if (contentList.isEmpty) {
+    if (allContentList.isEmpty) {
       return SliverFillRemaining(
-        child: Center(child: Text('Content မရှိပါ!...')),
+        child: Center(
+          child: RefreshButton(
+            text: Text('Content မရှိပါ!...'),
+            onClicked: _loadChapterContent,
+          ),
+        ),
       );
     }
     return SliverList.builder(
-      itemCount: contentList.length,
-      itemBuilder: (context, index) => _listItem(contentList[index]),
+      itemCount: showContentList.length,
+      itemBuilder: (context, index) => _listItem(index, showContentList[index]),
     );
   }
 
-  Widget _listItem(ApyarContent content) {
+  Widget _listItem(int index, Content content) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 8),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            'Chapter: `${content.chapter}`',
-            style: TextStyle(
-              fontSize: fontSize.toDouble(),
-              fontWeight: FontWeight.bold,
+          Divider(),
+          Card(
+            child: Text(
+              'Chapter: `${content.chapter}`',
+              style: TextStyle(
+                fontSize: fontSize.toDouble(),
+                fontWeight: FontWeight.bold,
+              ),
             ),
           ),
           Divider(),
           SizedBox(height: 10),
-          Text(content.body, style: TextStyle(fontSize: fontSize.toDouble())),
+          Text(
+            textList[index],
+            style: TextStyle(fontSize: fontSize.toDouble()),
+          ),
         ],
       ),
     );
@@ -149,10 +170,13 @@ class _ContentScreenState extends State<ContentScreen> {
       child: (showContentListIndex + 1) > allContentList.length - 1
           ? null
           : InkWell(
-              onTap: () {
+              onTap: () async {
                 showContentListIndex++;
                 final next = allContentList[showContentListIndex];
-                contentList.add(next);
+                showContentList.add(next);
+                final res = await store?.contentBox.readBigDataAsString(next);
+                textList.add(res ?? '');
+                if (!mounted) return;
                 setState(() {});
               },
               child: Card(

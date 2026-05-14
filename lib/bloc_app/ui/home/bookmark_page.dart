@@ -10,6 +10,7 @@ import 'package:apyar_app/more_libs/setting/core/path_util.dart';
 import 'package:file_selector/file_selector.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:t_widgets/extensions/t_widgets_extensions.dart';
 import 'package:t_widgets/t_widgets.dart';
 import 'package:than_pkg/than_pkg.dart';
 
@@ -42,9 +43,8 @@ class _BookmarkPageState extends State<BookmarkPage>
       appBar: AppBar(
         title: Text('Book Mark'),
         actions: [
-          !TPlatform.isDesktop
-              ? SizedBox.shrink()
-              : IconButton(onPressed: init, icon: Icon(Icons.refresh)),
+          if (Platform.isLinux)
+            IconButton(onPressed: init, icon: Icon(Icons.refresh)),
           IconButton(onPressed: _showMenu, icon: Icon(Icons.more_vert)),
         ],
       ),
@@ -79,6 +79,7 @@ class _BookmarkPageState extends State<BookmarkPage>
       apyar: apyar,
       onClicked: (apyar) =>
           context.goRoute(builder: (context) => ContentScreen(apyar: apyar)),
+      onRightClicked: _showItemMenu,
     );
   }
 
@@ -171,7 +172,7 @@ class _BookmarkPageState extends State<BookmarkPage>
           initialDirectory: PathUtil.getOutPath(),
           canCreateDirectories: true,
           confirmButtonText: 'Save Bookmark',
-          suggestedName: dbFile.getName(),
+          suggestedName: FileExtension(dbFile).getName(),
         );
 
         if (loc == null) {
@@ -195,7 +196,9 @@ class _BookmarkPageState extends State<BookmarkPage>
         if (!await ThanPkg.android.permission.isStoragePermissionGranted()) {
           await ThanPkg.android.permission.requestStoragePermission();
         }
-        final outFile = File(PathUtil.getOutPath(name: dbFile.getName()));
+        final outFile = File(
+          PathUtil.getOutPath(name: FileExtension(dbFile).getName()),
+        );
         final inpStream = dbFile.openRead();
         final outStream = outFile.openWrite();
         await inpStream.pipe(outStream);
@@ -231,6 +234,23 @@ class _BookmarkPageState extends State<BookmarkPage>
         }
         init();
       },
+    );
+  }
+
+  void _showItemMenu(Apyar apyar) {
+    showTMenuBottomSheet(
+      context,
+      children: [
+        ListTile(
+          iconColor: Colors.yellow,
+          leading: Icon(Icons.delete_forever),
+          title: Text('Remove Bookmark'),
+          onTap: () {
+            context.close();
+            context.read<ApyarBookmarkListCubit>().delete(apyar);
+          },
+        ),
+      ],
     );
   }
 }

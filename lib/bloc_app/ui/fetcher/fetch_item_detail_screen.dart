@@ -5,7 +5,7 @@ import 'package:apyar_app/bloc_app/ui/fetcher/fetcher_types.dart';
 import 'package:apyar_app/components/cache_image.dart';
 import 'package:apyar_app/core/extensions/buildcontext_extensions.dart';
 import 'package:apyar_app/core/models/apyar.dart';
-import 'package:apyar_app/core/models/apyar_content.dart';
+import 'package:apyar_app/core/models/content.dart';
 import 'package:apyar_app/core/services/apyar_services.dart';
 import 'package:apyar_app/more_libs/setting/core/rabbit.dart';
 import 'package:flutter/material.dart';
@@ -249,22 +249,12 @@ class _FetchItemDetailScreenState extends State<FetchItemDetailScreen> {
       contentBuf.writeln(item.result);
       contentBuf.writeln();
     }
-    final content = await ApyarServices.instance.getContentDB().add(
-      ApyarContent(
-        apyarId: newApyar.autoId,
-        chapter: 1,
-        body: contentBuf.toString(),
-        date: DateTime.now(),
-      ),
+    final store = await ApyarServices.instance.getDualStore();
+    await store.contentBox.addWithBigDataString(
+      Content(apyarId: newApyar.id, chapter: 1),
+      bigString: contentBuf.toString(),
     );
     if (!mounted) return;
-    if (content == null) {
-      showTMessageDialogError(
-        context,
-        'Database ထဲကို `ApyarContent` သွင်းလို့မရပါ!။\nError ရှိနေပါတယ်',
-      );
-      return;
-    }
 
     // success
     showTSnackBar(context, 'Database ထဲကို သွင်းပြီးပါပြီ');

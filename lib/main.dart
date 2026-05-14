@@ -1,14 +1,13 @@
+import 'dart:io';
+
 import 'package:apyar_app/bloc_app/cubits/apyar_bookmark_list_cubit.dart';
 import 'package:apyar_app/bloc_app/cubits/apyar_list_cubit.dart';
 import 'package:apyar_app/bloc_app/cubits/fetch_item_response_cubit.dart';
-import 'package:apyar_app/core/models/apyar.dart';
-import 'package:apyar_app/core/models/apyar_content.dart';
-import 'package:apyar_app/core/models/tdb_adapters.dart';
 
 import 'package:apyar_app/more_libs/setting/core/path_util.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:t_db/t_db.dart';
 import 'package:t_widgets/t_widgets.dart';
 import 'package:than_pkg/than_pkg.dart';
 import 'package:apyar_app/app/my_app.dart';
@@ -62,13 +61,8 @@ void main() async {
   await TRecentDB.getInstance.init(
     rootPath: PathUtil.getConfigPath(name: 'recent.db.json'),
   );
-  final tdb = TDB.getInstance();
-  tdb.setAdapterNotExists<Apyar>(ApyarTdbAdapter());
-  tdb.setAdapterNotExists<ApyarContent>(ApyarContentTdbAdapter());
 
-  // final smdb = SMDB.getInstance();
-  // smdb.registerAdapterNotExists<Apyar>(ApyarSmdbAdapter());
-  // smdb.registerAdapterNotExists<ApyarContent>(ApyarContentSmdbAdapter());
+  await copyDatabase();
 
   runApp(
     MultiBlocProvider(
@@ -83,4 +77,36 @@ void main() async {
       child: const MyApp(),
     ),
   );
+}
+
+Future<void> copyDatabase() async {
+  final dbFile = File(PathUtil.getDatabasePath(name: 'apyar.dual.db'));
+
+  if (!dbFile.existsSync()) {
+    // 1. Asset ကနေ byte data ကို load လုပ်တယ်
+    final data = await rootBundle.load('assets/apyar.dual.db');
+
+    // 2. File ကို Write mode နဲ့ ဖွင့်တယ်
+    final buffer = data.buffer.asUint8List();
+    final ios = dbFile.openWrite();
+
+    // 3. Chunk အလိုက် ခွဲပြီး ရေးတယ် (ဥပမာ- တစ်ခါရေးရင် 1MB နှုန်း)
+    const int chunkSize = 1024 * 1024; // 1MB
+    int offset = 0;
+
+    while (offset < buffer.length) {
+      int end = offset + chunkSize;
+      if (end > buffer.length) end = buffer.length;
+
+      // အပိုင်းလိုက် ထုတ်ယူပြီး stream ထဲ ထည့်ရေးတယ်
+      ios.add(buffer.sublist(offset, end));
+      offset = end;
+    }
+
+    // 4. အားလုံးပြီးရင် ပိတ်ပေးရမယ်
+    await ios.flush();
+    await ios.close();
+
+    debugPrint("Database copy finished.");
+  }
 }

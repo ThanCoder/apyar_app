@@ -1,5 +1,4 @@
 import 'package:apyar_app/bloc_app/cubits/apyar_bookmark_list_cubit.dart';
-import 'package:apyar_app/core/interfaces/db/database_interface.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:t_widgets/t_widgets.dart';
 
@@ -19,9 +18,9 @@ class ApyarListCubit extends Cubit<ApyarListCubitState> {
       if (state.isLoading) return;
 
       emit(state.copyWith(list: [], isLoading: true, errorMessage: ''));
-      await DatabaseInterface.openDatabases();
 
-      final list = await _service.getApyarDB().getAll();
+      final store = await _service.getDualStore();
+      final list = await store.apyarBox.getAll();
 
       emit(state.copyWith(isLoading: false, list: list));
       sort();
@@ -34,13 +33,14 @@ class ApyarListCubit extends Cubit<ApyarListCubitState> {
     try {
       final list = state.list;
       // remove db
-      final value = await _service.getApyarDB().add(apyar);
-      if (value == null) return null;
+      final store = await _service.getDualStore();
+      final newId = await store.apyarBox.add(apyar);
 
-      list.insert(0, value);
+      final val = apyar.copyWith(id: newId);
+      list.insert(0, val);
 
       emit(state.copyWith(list: list, errorMessage: ''));
-      return value;
+      return val;
     } catch (e) {
       emit(state.copyWith(errorMessage: e.toString()));
       return null;
@@ -54,9 +54,18 @@ class ApyarListCubit extends Cubit<ApyarListCubitState> {
       if (index == -1) return;
       list.removeAt(index);
       // remove db
-      await _service.getApyarDB().deleteById(apyar.autoId);
+      final store = await _service.getDualStore();
+      await store.apyarBox.deleteById(apyar.id);
       //remove bookmark
       bookmark.delete(apyar);
+      // parent content delete
+      final deleteContentIdList = <int>[];
+      for (var content in await store.contentBox.find(
+        (value) => value.apyarId == apyar.id,
+      )) {
+        deleteContentIdList.add(content.id);
+      }
+      await store.contentBox.deleteByIdList(deleteContentIdList);
 
       emit(state.copyWith(list: list, errorMessage: ''));
     } catch (e) {
@@ -68,7 +77,8 @@ class ApyarListCubit extends Cubit<ApyarListCubitState> {
     try {
       final index = state.list.indexWhere((e) => e.id == apyar.id);
       if (index == -1) return;
-      await _service.getApyarDB().updateById(apyar.id, apyar);
+      final store = await _service.getDualStore();
+      await store.apyarBox.updateById(apyar.id, apyar);
       state.list[index] = apyar;
 
       emit(state.copyWith(list: state.list, errorMessage: ''));

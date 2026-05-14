@@ -9,8 +9,8 @@ class ApyarSmdbServices {
   final db = SMDB.getInstance();
   final config = SMDBConfig.empty().copyWith(dbType: 'APYD');
 
-  JsonDBBox<Apyar> get _box => db.getBox<Apyar>();
-  JsonDBBox<ApyarContent> get _contentBox => db.getBox<ApyarContent>();
+  JsonDBBox<Apyar> get box => db.getBox<Apyar>();
+  JsonDBBox<Content> get contentBox => db.getBox<Content>();
 
   Future<void> init() async {
     await db.open(
@@ -18,11 +18,11 @@ class ApyarSmdbServices {
       config: config,
     );
     db.registerAdapterNotExists<Apyar>(ApyarAdapter());
-    db.registerAdapterNotExists<ApyarContent>(ApyarContentAdapter());
+    db.registerAdapterNotExists<Content>(ApyarContentAdapter());
   }
 
   Future<List<Apyar>> getAll() async {
-    return _box.getAll();
+    return box.getAll();
   }
 
   Future<bool> deleteById(int id) async {
@@ -31,41 +31,41 @@ class ApyarSmdbServices {
       await deleteContentById(content.id);
     }
     // dele apyar
-    return await _box.deleteById(id);
+    return await box.deleteById(id);
   }
 
   Future<Apyar?> add(Apyar apyar) async {
-    return await _box.add(apyar);
+    return await box.add(apyar);
   }
 
   Future<bool> updateById(int id, Apyar apyar) async {
-    return await _box.updateById(id, value: apyar);
+    return await box.updateById(id, value: apyar);
   }
 
   Future<bool> deleteContentById(int id) async {
-    return await _contentBox.deleteById(id);
+    return await contentBox.deleteById(id);
   }
 
-  Future<ApyarContent?> getContentByApyarId(int id, {int chapter = 1}) async {
+  Future<Content?> getContentByApyarId(int id, {int chapter = 1}) async {
     // print('id: $id - ch: $chapter');
-    final res = await _contentBox.getByParentId(id);
+    final res = await contentBox.getByParentId(id);
     return res;
   }
 
-  Future<List<ApyarContent>> getContentListByApyarId(int id) async {
-    final list = await _contentBox.getAll();
+  Future<List<Content>> getContentListByApyarId(int id) async {
+    final list = await contentBox.getAll();
     return list.where((e) => e.apyarId == id).toList();
   }
 
-  Future<ApyarContent?> addContentByApyarId(int id, ApyarContent value) async {
-    return await _contentBox.add(value);
+  Future<Content?> addContentByApyarId(int id, Content value) async {
+    return await contentBox.add(value);
   }
 
-  Future<bool> updateContentByApyarId(int id, ApyarContent value) async {
-    return await _contentBox.updateById(id, value: value);
+  Future<bool> updateContentByApyarId(int id, Content value) async {
+    return await contentBox.updateById(id, value: value);
   }
 
-  Future<void> setContentByApyarId(int id, ApyarContent value) async {
+  Future<void> setContentByApyarId(int id, Content value) async {
     final found = await getContentByApyarId(id, chapter: value.chapter);
     if (found != null) {
       //delete
