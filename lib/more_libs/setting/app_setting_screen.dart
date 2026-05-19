@@ -1,7 +1,7 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
-import 'package:t_widgets/t_widgets.dart';
+import 'package:t_widgets/t_widgets.dart' show TListTileWithDescWidget, TTextField, TConfirmDialog;
 import 'package:than_pkg/than_pkg.dart';
 
 import 'setting.dart';

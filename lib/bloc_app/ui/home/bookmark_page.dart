@@ -10,7 +10,6 @@ import 'package:apyar_app/more_libs/setting/core/path_util.dart';
 import 'package:file_selector/file_selector.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:t_widgets/extensions/t_widgets_extensions.dart';
 import 'package:t_widgets/t_widgets.dart';
 import 'package:than_pkg/than_pkg.dart';
 
@@ -246,7 +245,7 @@ class _BookmarkPageState extends State<BookmarkPage>
           leading: Icon(Icons.delete_forever),
           title: Text('Remove Bookmark'),
           onTap: () {
-            context.close();
+            context.closeNavi();
             context.read<ApyarBookmarkListCubit>().delete(apyar);
           },
         ),

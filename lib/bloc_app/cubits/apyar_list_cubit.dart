@@ -13,12 +13,14 @@ class ApyarListCubit extends Cubit<ApyarListCubitState> {
 
   ApyarListCubit(this.bookmark) : super(ApyarListCubitState.empty());
 
-  Future<void> init() async {
+  Future<void> init({bool usedCache = true}) async {
     try {
       if (state.isLoading) return;
 
       emit(state.copyWith(list: [], isLoading: true, errorMessage: ''));
-
+      if (!usedCache) {
+        await _service.close();
+      }
       final store = await _service.getDualStore();
       final list = await store.apyarBox.getAll();
 

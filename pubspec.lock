@@ -125,18 +125,16 @@ packages:
     dependency: "direct main"
     description:
       name: dart_core_extensions
-      sha256: "443c5ba691c43f332d5398a534da1a2a01cedf64af57988370794574834fed41"
+      sha256: e0fc804b73d3e9db4a93f75165bbae7617c41bb3c2de6a225a751ecc0c9df9e8
       url: "https://pub.dev"
     source: hosted
-    version: "0.1.1"
+    version: "0.3.0"
   dual_store:
     dependency: "direct main"
     description:
-      path: "."
-      ref: HEAD
-      resolved-ref: d79475488bb7621ee5b04903d58bc79a35fb98ea
-      url: "https://github.com/ThanCoder/dual_store"
-    source: git
+      path: "/home/thancoder/projects/plugins/dual_store"
+      relative: false
+    source: path
     version: "0.1.0"
   fake_async:
     dependency: transitive
@@ -554,10 +552,10 @@ packages:
     dependency: "direct main"
     description:
       name: t_widgets
-      sha256: "3ae8ec0253aa73992d61a210af581fe6adb6a61fd79ee69f5796f1368d6dca3c"
+      sha256: "9a5218e8db71d81cdbf956caa1a8a525ea2109687eee6e86fcfe12116dd315a3"
       url: "https://pub.dev"
     source: hosted
-    version: "2.4.0"
+    version: "2.6.1"
   term_glyph:
     dependency: transitive
     description:

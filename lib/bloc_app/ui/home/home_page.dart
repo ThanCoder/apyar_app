@@ -31,7 +31,7 @@ class _HomePageState extends State<HomePage>
   bool get wantKeepAlive => true;
 
   Future<void> init({bool isUsedCache = true}) async {
-    await context.read<ApyarListCubit>().init();
+    await context.read<ApyarListCubit>().init(usedCache: isUsedCache);
   }
 
   @override

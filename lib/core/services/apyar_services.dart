@@ -12,4 +12,11 @@ class ApyarServices {
     await _services!.init();
     return _services!;
   }
+
+  Future<void> close() async {
+    if (_services != null) {
+      await _services!.db.close();
+      _services = null;
+    }
+  }
 }
