@@ -1,3 +1,7 @@
+# 3.1.0
+- Changed `Package Name`
+- Upgrade `Android Gradle` -> 8.14-bin
+
 # 3.0.0
 
 - Added `DualDB` new Database.

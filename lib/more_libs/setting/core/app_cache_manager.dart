@@ -1,7 +1,7 @@
 import 'dart:io';
 
+import 'package:dart_core_extensions/dart_core_extensions.dart';
 import 'package:flutter/material.dart';
-import 'package:than_pkg/than_pkg.dart';
 
 import '../setting.dart';
 import 'path_util.dart';
@@ -16,23 +16,23 @@ class AppCacheManager extends StatefulWidget {
 class _AppCacheManagerState extends State<AppCacheManager> {
   @override
   Widget build(BuildContext context) {
-    return FutureBuilder(
-      future: _getCalSize(),
-      builder: (context, snapshot) {
-        if (snapshot.connectionState == ConnectionState.waiting) {
-          return ListTile(title: Text('တွက်ချက်နေပါတယ်...'));
-        }
-        final (size, itemCount) = snapshot.data ?? ('', 0);
-        if (snapshot.hasData && size.isNotEmpty) {
-          return Card(
-            child: ListTile(
+    return Card(
+      child: FutureBuilder(
+        future: _getCalSize(),
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return ListTile(title: Text('တွက်ချက်နေပါတယ်...'));
+          }
+          final (size, itemCount) = snapshot.data ?? ('', 0);
+          if (snapshot.hasData && size.isNotEmpty) {
+            return ListTile(
               title: Text('Cache: $size - ( Items: $itemCount )'),
               onTap: _cleanCache,
-            ),
-          );
-        }
-        return SizedBox.shrink();
-      },
+            );
+          }
+          return SizedBox.shrink();
+        },
+      ),
     );
   }
 
@@ -48,7 +48,7 @@ class _AppCacheManagerState extends State<AppCacheManager> {
       }
     }
     // await Future.delayed(Duration(seconds: 3));
-    final label = sizeInt > 0 ? sizeInt.toDouble().toFileSizeLabel() : '';
+    final label = sizeInt > 0 ? sizeInt.toDouble().fileSizeLabel() : '';
     return (label, itemCount);
   }
 
@@ -81,4 +81,3 @@ class _AppCacheManagerState extends State<AppCacheManager> {
 
   String get getCachePath => PathUtil.getCachePath();
 }
-
