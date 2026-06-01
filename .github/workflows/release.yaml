@@ -13,6 +13,10 @@ jobs:
     permissions:
       contents: write
 
+    # Node 20 Warning ကို ဖြေရှင်းရန် Environment Variable ထည့်ထားခြင်း
+    env:
+      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -50,11 +54,16 @@ jobs:
       - name: Build Linux Desktop
         run: flutter build linux --release
 
+      # 3. Compress Linux Build (လမ်းကြောင်းကို ပိုသေချာအောင် ရှင်းထားပါတယ်)
       - name: Compress Linux Build
         run: |
-          cd build/linux/x64/release/bundle
-          zip -r ../../../../../linux-x64-release.zip *
-          cd -
+          if [ -d "build/linux/x64/release/bundle" ]; then
+            cd build/linux/x64/release/bundle
+            zip -r ../../../../../linux-x64-release.zip *
+          else
+            echo "Error: Linux bundle directory not found!"
+            exit 1
+          fi
 
       # 4. Create Release and Upload Files
       - name: Create GitHub Release
@@ -65,4 +74,3 @@ jobs:
             linux-x64-release.zip
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
