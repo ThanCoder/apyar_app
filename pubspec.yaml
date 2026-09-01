@@ -13,18 +13,16 @@ dependencies:
   cupertino_icons: ^1.0.8
   package_info_plus: ^10.2.1
   cfb_store: ^0.7.0
-
-  dart_core_extensions:
-    git:
-      url: https://github.com/ThanCoder/dart_core_extensions.git
-  t_widgets:
-    git:
-      url: https://github.com/ThanCoder/t_widgets.git
-  dual_store:
-    git: https://github.com/ThanCoder/dual_store
   than_pkg_linux: ^0.2.0
   than_pkg_android: ^0.6.1
   path_provider: ^2.1.6
+
+  dart_core_extensions:
+    git: https://github.com/ThanCoder/dart_core_extensions.git
+  t_widgets:
+    git: https://github.com/ThanCoder/t_widgets.git
+  dual_store:
+    git: https://github.com/ThanCoder/dual_store
 
 # flutter pub upgrade dart_core_extensions t_widgets dual_store
 
