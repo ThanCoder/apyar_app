@@ -1,8 +1,8 @@
 import 'dart:async';
 
-import 'package:apyar_app/core/utils/app_utils.dart';
+import 'package:apyar_app/core/utils/app_util.dart';
 import 'package:apyar_app/keys.dart';
-import 'package:apyar_app/ui/pages/more/more_page.dart';
+import 'package:apyar_app/ui/pages/more_page.dart';
 import 'package:apyar_app/ui/platforms/desktop/desktop_home_page.dart';
 import 'package:flutter/material.dart';
 
@@ -20,7 +20,7 @@ class _DesktopHomeScreenState extends State<DesktopHomeScreen> {
 
   void saveSize() {
     if (constraints == null) return;
-    AppUtils.instance.config
+    AppUtil.instance.config
         .put(appWidthkey, constraints!.maxWidth)
         .put(appHeightkey, constraints!.maxHeight)
         .writeAll();

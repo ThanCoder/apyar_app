@@ -1,6 +1,5 @@
 import 'package:apyar_app/core/db/du_db.dart';
 import 'package:apyar_app/core/models/apyar.dart';
-import 'package:apyar_app/ui/platforms/components/dialog/error_alert_dialog.dart';
 import 'package:flutter/material.dart';
 
 class DesktopReaderPage extends StatefulWidget {
@@ -21,22 +20,18 @@ class _DesktopReaderPageState extends State<DesktopReaderPage> {
   List<String> textList = [];
 
   void init() async {
-    final contentRes = await DuDB.instance.apyarContentBox.getAll(
+    final contentList = await DuDB.instance.apyarContentBox.getAll(
       parentId: widget.apyar.generatedId,
     );
     if (!mounted) return;
-    if (contentRes.isErr) {
-      showErrorDialog(context, contentRes.unwrapError());
-      return;
-    }
-    for (var conList in contentRes.unwrap()) {
-      final res = await conList.getContent<String>();
+
+    for (var con in contentList) {
+      final res = await con.getContent<String>();
       if (!mounted) return;
-      if (res.isErr) {
-        showErrorDialog(context, res.unwrapError());
-        return;
+      if (res.isOk) {
+        textList.add('Chapter: ${con.chapter}\n');
+        textList.addAll(res.unwrap().split('\n'));
       }
-      textList = res.unwrap().split('\n');
     }
     setState(() {});
   }

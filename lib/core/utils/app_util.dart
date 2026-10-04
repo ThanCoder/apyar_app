@@ -5,10 +5,10 @@ import 'package:dart_core_extensions/dart_core_extensions.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:path_provider/path_provider.dart';
 
-class AppUtils {
-  static final AppUtils instance = AppUtils._();
-  AppUtils._();
-  factory AppUtils() => instance;
+class AppUtil {
+  static final AppUtil instance = AppUtil._();
+  AppUtil._();
+  factory AppUtil() => instance;
 
   late Directory configDir;
   late Directory cacheDir;

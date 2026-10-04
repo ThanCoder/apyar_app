@@ -1,6 +1,6 @@
 import 'package:apyar_app/core/db/du_db.dart';
 import 'package:apyar_app/core/models/apyar.dart';
-import 'package:apyar_app/ui/platforms/desktop/desktop_reader_page.dart';
+import 'package:apyar_app/ui/pages/desktop_reader_page.dart';
 import 'package:flutter/material.dart';
 import 'package:t_widgets/t_widgets.dart';
 
@@ -15,40 +15,98 @@ class _DesktopHomePageState extends State<DesktopHomePage> {
   ColorScheme get col => Theme.of(context).colorScheme;
 
   @override
+  void initState() {
+    super.initState();
+    init();
+  }
+
+  List<Apyar> list = [];
+  bool isLoading = false;
+
+  Future<void> init() async {
+    setState(() {
+      isLoading = true;
+    });
+    await DuDB.instance.reloadIfNotOpened();
+    if (!mounted) return;
+    list = await DuDB.instance.apyarBox.getAll();
+
+    setState(() {
+      isLoading = false;
+    });
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(),
+      appBar: AppBar(title: Text('Apyar Doc')),
       body: CustomScrollView(
         slivers: [
-          FutureBuilder(
-            future: DuDB.instance.apyarBox.getAll(),
-            builder: (context, snapshot) {
-              if (!snapshot.hasData) {
-                return SliverToBoxAdapter(
-                  child: CircularProgressIndicator.adaptive(),
-                );
-              }
-              final data = snapshot.data!;
-              if (data.isErr) {
-                return SliverToBoxAdapter(
-                  child: Text('Error: ${data.unwrapError()}'),
-                );
-              }
-              return SliverPadding(
+          if (isLoading)
+            SliverFillRemaining(
+              child: Center(child: CircularProgressIndicator.adaptive()),
+            ),
+          if (list.isNotEmpty)
+            SliverToBoxAdapter(
+              child: Padding(
                 padding: .symmetric(vertical: 5, horizontal: 10),
-                sliver: SliverList.separated(
-                  separatorBuilder: (context, index) => SizedBox(height: 5),
-                  itemCount: data.unwrap().length,
-                  itemBuilder: (context, index) =>
-                      _listItem(data.unwrap()[index]),
-                ),
-              );
-            },
-          ),
+                child: _header(),
+              ),
+            ),
+          if (list.isEmpty)
+            SliverFillRemaining(
+              child: RefreshButton(text: Text('List Empty'), onClicked: init),
+            )
+          else
+            SliverPadding(
+              padding: .symmetric(vertical: 5, horizontal: 10),
+              sliver: SliverList.separated(
+                separatorBuilder: (context, index) => SizedBox(height: 5),
+                itemCount: list.length,
+                itemBuilder: (context, index) {
+                  final item = list[index];
+                  return _listItem(item);
+                },
+              ),
+            ),
         ],
       ),
     );
   }
+
+  Widget _header() => Container(
+    padding: .symmetric(vertical: 8, horizontal: 10),
+    decoration: BoxDecoration(
+      color: col.surfaceContainer,
+      borderRadius: .circular(14),
+    ),
+    child: Row(
+      spacing: 10,
+      children: [
+        Icon(Icons.file_present_outlined),
+        Text(
+          'Apyar Documents',
+          style: TextStyle(
+            fontSize: 19,
+            color: col.onSurface,
+            fontWeight: .w700,
+          ),
+        ),
+        Spacer(),
+        Container(
+          padding: .symmetric(vertical: 4, horizontal: 8),
+          decoration: BoxDecoration(
+            color: col.primaryContainer.withValues(alpha: .45),
+            borderRadius: .circular(14),
+          ),
+          child: Text(
+            list.length.toString(),
+            style: TextStyle(color: col.onPrimaryContainer, fontWeight: .w700),
+          ),
+        ),
+      ],
+    ),
+  );
 
   int? currentId;
 
@@ -63,6 +121,7 @@ class _DesktopHomePageState extends State<DesktopHomePage> {
         apyar.title,
         style: TextStyle(color: col.onSurface, fontWeight: .w600, fontSize: 14),
       ),
+      leading: IconButton(onPressed: () {}, icon: Icon(Icons.favorite_outline)),
       trailing: Icon(
         Icons.arrow_forward_ios_outlined,
         color: col.onSurfaceVariant,

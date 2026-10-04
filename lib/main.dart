@@ -1,7 +1,7 @@
 import 'dart:io';
 
 import 'package:apyar_app/core/db/du_db.dart';
-import 'package:apyar_app/core/utils/app_utils.dart';
+import 'package:apyar_app/core/utils/app_util.dart';
 import 'package:apyar_app/keys.dart';
 import 'package:apyar_app/platform_app.dart';
 import 'package:flutter/material.dart';
@@ -11,17 +11,19 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   // home/thancoder/Documents/apyar.store
 
-  await AppUtils.instance.init();
+  await AppUtil.instance.init();
 
   if (Platform.isLinux) {
     ThanPkgLinux.getInstance.window.setWindowSize(
-      width: AppUtils.instance.config.getDouble(appWidthkey, 600).toInt(),
-      height: AppUtils.instance.config.getDouble(appHeightkey, 400).toInt(),
+      width: AppUtil.instance.config.getDouble(appWidthkey, 600).toInt(),
+      height: AppUtil.instance.config.getDouble(appHeightkey, 400).toInt(),
     );
   }
 
   await DuDB.instance.init();
-  await DuDB.instance.open('/home/thancoder/Documents/apyar.store');
+  await DuDB.instance.open(
+    AppUtil.instance.config.getString(appDatabseCustomPathKey),
+  );
 
   runApp(const PlatformApp());
 }

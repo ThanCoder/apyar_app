@@ -24,6 +24,10 @@ class DuDB implements IDB {
     await _db.open(path);
   }
 
+  Future<void> reloadIfNotOpened() async {
+    await _db.reloadIfNotOpened();
+  }
+
   @override
   Future<void> close() async {
     await _db.close();
