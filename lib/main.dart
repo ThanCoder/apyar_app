@@ -12,6 +12,7 @@ void main() async {
   // home/thancoder/Documents/apyar.store
 
   await AppUtil.instance.init();
+  final config = AppUtil.instance.config;
 
   if (Platform.isLinux) {
     ThanPkgLinux.getInstance.window.setWindowSize(
@@ -21,9 +22,12 @@ void main() async {
   }
 
   await DuDB.instance.init();
-  await DuDB.instance.open(
-    AppUtil.instance.config.getString(appDatabseCustomPathKey),
-  );
+  String dbPath = AppUtil.instance.getConfigPath('apyar.db.du');
+  if (config.getBool(appDatabseCustomPathEnableKey)) {
+    dbPath = AppUtil.instance.config.getString(appDatabseCustomPathKey);
+  }
+
+  await DuDB.instance.open(dbPath);
 
   runApp(const PlatformApp());
 }

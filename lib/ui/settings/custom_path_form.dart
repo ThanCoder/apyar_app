@@ -1,7 +1,9 @@
 import 'dart:async';
 
+import 'package:apyar_app/core/db/du_db.dart';
 import 'package:apyar_app/core/utils/app_util.dart';
 import 'package:apyar_app/keys.dart';
+import 'package:apyar_app/ui/platforms/components/dialog/snack_alert.dart';
 import 'package:apyar_app/ui/platforms/components/forms/input_text.dart';
 import 'package:flutter/material.dart';
 
@@ -24,6 +26,8 @@ class _CustomPathFormState extends State<CustomPathForm> {
           controller.text = cf.getString(appDatabseCustomPathKey);
           setState(() {});
         });
+    controller.text = cf.getString(appDatabseCustomPathKey);
+    setState(() {});
   }
 
   @override
@@ -34,6 +38,14 @@ class _CustomPathFormState extends State<CustomPathForm> {
 
   final cf = AppUtil.instance.config;
   final controller = TextEditingController();
+  bool isChanged = false;
+
+  void savePath() async {
+    await cf.putAndWriteAll(appDatabseCustomPathKey, controller.text);
+    await DuDB.instance.changePath(controller.text);
+    if (!mounted) return;
+    showSnackbar(context, 'Saved');
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -55,7 +67,21 @@ class _CustomPathFormState extends State<CustomPathForm> {
               controller: controller,
               maxLines: null,
               label: Text('Custom Path'),
+              onChanged: (val) {
+                if (!isChanged) {
+                  setState(() {
+                    isChanged = true;
+                  });
+                }
+              },
             ),
+          ),
+        if (enable && isChanged)
+          Row(
+            children: [
+              Spacer(),
+              FilledButton(onPressed: savePath, child: Text('Save')),
+            ],
           ),
       ],
     );

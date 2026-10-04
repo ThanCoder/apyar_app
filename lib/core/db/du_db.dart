@@ -24,6 +24,10 @@ class DuDB implements IDB {
     await _db.open(path);
   }
 
+  Future<void> changePath(String path) async {
+    await _db.changePath(path);
+  }
+
   Future<void> reloadIfNotOpened() async {
     await _db.reloadIfNotOpened();
   }
