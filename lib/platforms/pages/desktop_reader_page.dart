@@ -55,6 +55,6 @@ class _DesktopReaderPageState extends State<DesktopReaderPage> {
   }
 
   Widget _item(String text) {
-    return Text(text, style: TextStyle(fontSize: 18));
+    return Text(text, style: TextStyle(fontSize: 20));
   }
 }

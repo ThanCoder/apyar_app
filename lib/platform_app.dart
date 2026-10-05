@@ -55,6 +55,8 @@ class _PlatformAppState extends State<PlatformApp> {
   Widget get _body {
     return LayoutBuilder(
       builder: (context, constraints) {
+        this.constraints = constraints;
+        saveDelay();
         final maxW = constraints.maxWidth;
         final isDesktop = TPlatform.isDesktop;
         if (isDesktop) {

@@ -1,5 +1,7 @@
+import 'package:apyar_app/platforms/pages/fav/fav_home_page.dart';
 import 'package:apyar_app/platforms/pages/more_page.dart';
 import 'package:apyar_app/platforms/desktop/desktop_home_page.dart';
+import 'package:apyar_app/platforms/pages/search/search_home_page.dart';
 import 'package:flutter/material.dart';
 
 class MobileHomeScreen extends StatefulWidget {
@@ -17,7 +19,12 @@ class _MobileHomeScreenState extends State<MobileHomeScreen> {
     return Scaffold(
       body: IndexedStack(
         index: index,
-        children: [DesktopHomePage(), MorePage()],
+        children: [
+          DesktopHomePage(),
+          SearchHomePage(),
+          FavHomePage(),
+          MorePage(),
+        ],
       ),
       bottomNavigationBar: NavigationBar(
         selectedIndex: index,
@@ -28,6 +35,14 @@ class _MobileHomeScreenState extends State<MobileHomeScreen> {
         },
         destinations: [
           NavigationDestination(icon: Icon(Icons.home_outlined), label: 'Home'),
+          NavigationDestination(
+            icon: Icon(Icons.search_outlined),
+            label: 'Search',
+          ),
+          NavigationDestination(
+            icon: Icon(Icons.favorite_outline),
+            label: 'Fav',
+          ),
           NavigationDestination(
             icon: Icon(Icons.grid_view_outlined),
             label: 'More',

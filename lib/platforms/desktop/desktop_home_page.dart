@@ -1,10 +1,11 @@
 import 'dart:async';
 
-import 'package:apyar_app/core/db/du_db.dart';
+import 'package:apyar_app/core/controllers/apyar/apyar_controller.dart';
+import 'package:apyar_app/core/controllers/i_controller.dart';
 import 'package:apyar_app/core/models/apyar.dart';
-import 'package:apyar_app/platforms/pages/desktop_reader_page.dart';
+import 'package:apyar_app/platforms/pages/fav/fav_toggle_btn.dart';
+import 'package:apyar_app/routes.dart';
 import 'package:dart_core_extensions/dart_core_extensions.dart';
-import 'package:dual_store/dual_store.dart';
 import 'package:flutter/material.dart';
 import 'package:t_widgets/t_widgets.dart';
 
@@ -16,43 +17,17 @@ class DesktopHomePage extends StatefulWidget {
 }
 
 class _DesktopHomePageState extends State<DesktopHomePage> {
-  StreamSubscription? _sub;
-
   @override
   void initState() {
-    super.initState();
-    _sub = db.store.events.all
-        .where(
-          (e) => e is AddId || e is ChangePath || e is DeleteId || e is Open,
-        )
-        .listen((event) {
-          init();
-        });
     init();
+    super.initState();
   }
 
-  @override
-  void dispose() {
-    _sub?.cancel();
-    super.dispose();
-  }
+  final con = ControllerManager.read<ApyarController>();
 
-  List<Apyar> list = [];
-  bool isLoading = false;
-  final db = DuDB.instance;
-
-  Future<void> init() async {
-    list.clear();
-    setState(() {
-      isLoading = true;
-    });
-    await DuDB.instance.reloadIfNotOpened();
-    if (!mounted) return;
-    list = await DuDB.instance.apyarBox.getAll();
-
-    setState(() {
-      isLoading = false;
-    });
+  Future<void> init({bool force = false}) async {
+    if (!force && con.list.isNotEmpty) return;
+    await con.fetchApyarList();
   }
 
   ColorScheme get col => Theme.of(context).colorScheme;
@@ -60,48 +35,60 @@ class _DesktopHomePageState extends State<DesktopHomePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text('Apyar Doc'),
-        actions: [
-          if (TPlatform.isDesktop)
-            IconButton(onPressed: init, icon: Icon(Icons.refresh_outlined)),
-        ],
-      ),
+      appBar: _appbar(),
       body: RefreshIndicator.adaptive(
-        onRefresh: init,
-        child: CustomScrollView(
-          physics: AlwaysScrollableScrollPhysics(),
-          slivers: [
-            if (isLoading)
-              SliverFillRemaining(
-                child: Center(child: CircularProgressIndicator.adaptive()),
-              ),
-            if (list.isNotEmpty)
-              SliverToBoxAdapter(
-                child: Padding(
-                  padding: .symmetric(vertical: 5, horizontal: 10),
-                  child: _header(),
-                ),
-              ),
-            if (list.isEmpty)
-              SliverFillRemaining(
-                child: RefreshButton(text: Text('List Empty'), onClicked: init),
-              )
-            else
-              SliverPadding(
-                padding: .symmetric(vertical: 5, horizontal: 10),
-                sliver: SliverList.separated(
-                  separatorBuilder: (context, index) => SizedBox(height: 5),
-                  itemCount: list.length,
-                  itemBuilder: (context, index) {
-                    final item = list[index];
-                    return _listItem(item);
-                  },
-                ),
-              ),
-          ],
+        onRefresh: () => init(force: true),
+        child: StreamBuilder(
+          stream: con.events.whereType<ApLoad>(),
+          builder: (context, asyncSnapshot) {
+            return CustomScrollView(
+              physics: AlwaysScrollableScrollPhysics(),
+              slivers: [
+                if (con.isLoading)
+                  SliverFillRemaining(
+                    child: Center(child: CircularProgressIndicator.adaptive()),
+                  ),
+                if (con.list.isNotEmpty)
+                  SliverToBoxAdapter(
+                    child: Padding(
+                      padding: .symmetric(vertical: 5, horizontal: 10),
+                      child: _header(),
+                    ),
+                  ),
+                if (con.list.isEmpty)
+                  SliverFillRemaining(
+                    child: RefreshButton(text: Text('List Empty'), onClicked: init),
+                  )
+                else
+                  SliverPadding(
+                    padding: .symmetric(vertical: 5, horizontal: 10),
+                    sliver: SliverList.separated(
+                      separatorBuilder: (context, index) => SizedBox(height: 5),
+                      itemCount: con.list.length,
+                      itemBuilder: (context, index) {
+                        final item = con.list[index];
+                        return _listItem(item);
+                      },
+                    ),
+                  ),
+              ],
+            );
+          }
         ),
       ),
+    );
+  }
+
+  AppBar _appbar() {
+    return AppBar(
+      title: Text('Apyar Doc'),
+      actions: [
+        if (TPlatform.isDesktop)
+          IconButton(
+            onPressed: () => init(force: true),
+            icon: Icon(Icons.refresh_outlined),
+          ),
+      ],
     );
   }
 
@@ -131,7 +118,7 @@ class _DesktopHomePageState extends State<DesktopHomePage> {
             borderRadius: .circular(14),
           ),
           child: Text(
-            list.length.toString(),
+            con.list.length.toString(),
             style: TextStyle(color: col.onPrimaryContainer, fontWeight: .w700),
           ),
         ),
@@ -152,16 +139,14 @@ class _DesktopHomePageState extends State<DesktopHomePage> {
         apyar.title,
         style: TextStyle(color: col.onSurface, fontWeight: .w600, fontSize: 14),
       ),
-      leading: IconButton(onPressed: () {}, icon: Icon(Icons.favorite_outline)),
+      leading: FavToggleBtn(apyar: apyar),
       trailing: Icon(
         Icons.arrow_forward_ios_outlined,
         color: col.onSurfaceVariant,
       ),
       onTap: () async {
         currentId = apyar.generatedId;
-        await context.pushMaterialPageRoute(
-          builder: (mainCtx) => DesktopReaderPage(apyar: apyar),
-        );
+        await goContentPage(context, apyar);
         setState(() {});
       },
     );

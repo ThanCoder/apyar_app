@@ -1,11 +1,14 @@
 import 'dart:async';
 import 'dart:io';
 
+import 'package:apyar_app/core/controllers/apyar/apyar_controller.dart';
+import 'package:apyar_app/core/controllers/i_controller.dart';
 import 'package:apyar_app/core/db/du_db.dart';
 import 'package:apyar_app/core/utils/app_util.dart';
 import 'package:apyar_app/keys.dart';
 import 'package:apyar_app/platforms/components/dialog/snack_alert.dart';
 import 'package:apyar_app/platforms/components/forms/input_text.dart';
+import 'package:apyar_app/platforms/pages/fav/fav_controller.dart';
 import 'package:dart_core_extensions/dart_core_extensions.dart';
 import 'package:flutter/material.dart';
 import 'package:than_pkg_android/than_pkg_android.dart';
@@ -66,13 +69,10 @@ class _CustomPathFormState extends State<CustomPathForm> {
       }
     }
     cf.putAndWriteAll(appDatabseCustomPathEnableKey, enable);
-    if (enable) {
-      await DuDB.instance.changePath(cf.getString(appDatabseCustomPathKey));
-    } else {
-      await DuDB.instance.changePath(
-        AppUtil.instance.getConfigPath('apyar.db.du'),
-      );
-    }
+
+    //init
+    ControllerManager.read<ApyarController>().init();
+    ControllerManager.read<FavController>().init();
   }
 
   void savePath() async {
@@ -83,6 +83,10 @@ class _CustomPathFormState extends State<CustomPathForm> {
     if (!mounted) return;
     setState(() {});
     showSnackbar(context, 'Saved');
+
+    //init
+    ControllerManager.read<ApyarController>().init();
+    ControllerManager.read<FavController>().init();
   }
 
   ColorScheme get col => Theme.of(context).colorScheme;

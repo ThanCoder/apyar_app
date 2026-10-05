@@ -43,10 +43,6 @@ class AppUtil {
       if (cfd != null) {
         _configDir = cfd;
       }
-      // info
-      // final info = await ThanPkgLinux.getInstance.info.getAppInfo();
-      // packageName = info!.packageName;
-      // versionName = info.version;
     } else
     // android
     if (Platform.isAndroid) {
