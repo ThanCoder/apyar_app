@@ -1,52 +1,149 @@
 import 'dart:io';
+import 'dart:isolate';
 
 import 'package:cfb_store/cfb_store.dart';
 import 'package:dart_core_extensions/dart_core_extensions.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:package_info_plus/package_info_plus.dart';
-import 'package:path_provider/path_provider.dart';
+import 'package:than_pkg_android/than_pkg_android.dart';
+import 'package:than_pkg_linux/than_pkg_linux.dart';
 
 class AppUtil {
-  static final AppUtil instance = AppUtil._();
+  static AppUtil instance = AppUtil._();
   AppUtil._();
   factory AppUtil() => instance;
 
-  late Directory configDir;
-  late Directory cacheDir;
-
-  late String packageName;
-  late String version;
-
+  final recentConfig = CFBStore();
   final config = CFBStore.instance;
 
+  late Directory _cacheDir;
+  late Directory _configDir;
+  late Directory _androidEmulatedStorageConfigDir;
+  late String packageName;
+  late String version;
+  late String appName;
+
+  Directory get cacheDir => _cacheDir;
+
   Future<void> init() async {
-    cacheDir = await getApplicationCacheDirectory();
-    configDir = await getApplicationSupportDirectory();
-
     final info = await PackageInfo.fromPlatform();
-    version = info.version;
     packageName = info.packageName;
-    await config.open(getConfigPath('app.config.cfb'));
-  }
+    version = info.version;
+    appName = info.appName.split('_').join(' ').capitalize;
 
-  String getConfigPath([String? name]) {
-    if (!configDir.existsSync()) {
-      configDir.createSync(recursive: true);
-    }
-    if (name != null) {
-      return configDir.join(name);
-    }
+    // linux
+    if (Platform.isLinux) {
+      final pkg = ThanPkgLinux.getInstance.pathHandler;
+      final cd = await pkg.getApplicationTemporaryDirectory();
+      if (cd != null) {
+        _cacheDir = cd;
+      }
+      final cfd = await pkg.getApplicationConfigDirectory();
+      if (cfd != null) {
+        _configDir = cfd;
+      }
+      // info
+      // final info = await ThanPkgLinux.getInstance.info.getAppInfo();
+      // packageName = info!.packageName;
+      // versionName = info.version;
+    } else
+    // android
+    if (Platform.isAndroid) {
+      final pkg = ThanPkgAndroid.getInstance.pathHandler;
+      final ca = await pkg.getCachePath();
+      if (ca != null) {
+        _cacheDir = Directory(ca);
+      }
+      final cf = await pkg.getExternalFilesPath();
+      if (cf != null) {
+        _configDir = Directory(cf);
+      }
+      // info
+      // final info = await ThanPkgAndroid.getInstance.infoHandler.getAppInfo();
+      // packageName = info!.packageName;
+      // versionName = info.versionName;
 
-    return configDir.path;
+      _androidEmulatedStorageConfigDir = Directory(
+        pkg.getDeviceStoragePath().join('.${info.packageName}'),
+      );
+    } else {
+      throw UnsupportedError('Unsupported Platform path Provider');
+    }
+    await config.open(AppUtil.instance.getConfigPath('app.config.cfb'));
   }
 
   String getCachePath([String? name]) {
-    if (!cacheDir.existsSync()) {
-      cacheDir.createSync(recursive: true);
+    if (!_cacheDir.existsSync()) {
+      _cacheDir.createSync(recursive: true);
     }
-    if (name != null) {
-      return cacheDir.join(name);
-    }
+    if (name == null) return _cacheDir.path;
 
-    return cacheDir.path;
+    return _cacheDir.path.join(name);
+  }
+
+  String getConfigPath([String? name]) {
+    if (!_configDir.existsSync()) {
+      _configDir.createSync(recursive: true);
+    }
+    if (name == null) return _configDir.path;
+
+    return _configDir.path.join(name);
+  }
+
+  String getAndroidExternalConfigPath([String? name]) {
+    if (!_androidEmulatedStorageConfigDir.existsSync()) {
+      _androidEmulatedStorageConfigDir.createSync(recursive: true);
+    }
+    if (name == null) return _androidEmulatedStorageConfigDir.path;
+
+    return _androidEmulatedStorageConfigDir.path.join(name);
+  }
+
+  String getPlatfromExternalConfigPath([String? name]) {
+    if (Platform.isAndroid) {
+      return getAndroidExternalConfigPath(name);
+    }
+    return getConfigPath(name);
+  }
+
+  /// ### Return -> [(count,size)]
+  Future<(int, int)> getFolderInfo(Directory dir) async {
+    if (!dir.existsSync()) return (0, 0);
+    return await Isolate.run<(int, int)>(() {
+      try {
+        int size = 0;
+        int count = 0;
+        for (var entry in dir.listSync(recursive: true)) {
+          if (entry.isFile) {
+            size += entry.size;
+          }
+          count++;
+        }
+        return (count, size);
+      } catch (e) {
+        debugPrint('[AppUtil:deleteDir]: $e');
+        return (0, 0);
+      }
+    });
+  }
+
+  Future<bool> deleteFolder(Directory dir) async {
+    if (!dir.existsSync()) return false;
+    return await Isolate.run(() {
+      try {
+        for (var file in dir.listSync()) {
+          file.deleteSync(recursive: true);
+        }
+        return true;
+      } catch (e) {
+        debugPrint('[AppUtil:deleteDir]: $e');
+        return false;
+      }
+    });
+  }
+
+  Future<void> copyText(String text) async {
+    await Clipboard.setData(.new(text: text));
   }
 }

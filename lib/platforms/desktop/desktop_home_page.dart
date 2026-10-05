@@ -1,6 +1,9 @@
+import 'dart:async';
+
 import 'package:apyar_app/core/db/du_db.dart';
 import 'package:apyar_app/core/models/apyar.dart';
-import 'package:apyar_app/ui/pages/desktop_reader_page.dart';
+import 'package:apyar_app/platforms/pages/desktop_reader_page.dart';
+import 'package:dual_store/dual_store.dart';
 import 'package:flutter/material.dart';
 import 'package:t_widgets/t_widgets.dart';
 
@@ -12,18 +15,33 @@ class DesktopHomePage extends StatefulWidget {
 }
 
 class _DesktopHomePageState extends State<DesktopHomePage> {
-  ColorScheme get col => Theme.of(context).colorScheme;
+  StreamSubscription? _sub;
 
   @override
   void initState() {
     super.initState();
+    _sub = db.store.events.all
+        .where(
+          (e) => e is AddId || e is ChangePath || e is DeleteId || e is Open,
+        )
+        .listen((event) {
+          init();
+        });
     init();
+  }
+
+  @override
+  void dispose() {
+    _sub?.cancel();
+    super.dispose();
   }
 
   List<Apyar> list = [];
   bool isLoading = false;
+  final db = DuDB.instance;
 
   Future<void> init() async {
+    list.clear();
     setState(() {
       isLoading = true;
     });
@@ -36,10 +54,17 @@ class _DesktopHomePageState extends State<DesktopHomePage> {
     });
   }
 
+  ColorScheme get col => Theme.of(context).colorScheme;
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text('Apyar Doc')),
+      appBar: AppBar(
+        title: Text('Apyar Doc'),
+        actions: [
+          IconButton(onPressed: init, icon: Icon(Icons.refresh_outlined)),
+        ],
+      ),
       body: CustomScrollView(
         slivers: [
           if (isLoading)

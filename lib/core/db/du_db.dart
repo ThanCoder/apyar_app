@@ -16,6 +16,7 @@ class DuDB implements IDB {
     _db.registerAdapter(ApyarContentAdapter());
   }
 
+  DualStore get store => _db;
   DuBox<Apyar> get apyarBox => _db.getBox<Apyar>();
   DuBox<ApyarContent> get apyarContentBox => _db.getBox<ApyarContent>();
 
