@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:apyar_app/core/db/du_db.dart';
 import 'package:apyar_app/core/models/apyar.dart';
 import 'package:apyar_app/platforms/pages/desktop_reader_page.dart';
+import 'package:dart_core_extensions/dart_core_extensions.dart';
 import 'package:dual_store/dual_store.dart';
 import 'package:flutter/material.dart';
 import 'package:t_widgets/t_widgets.dart';
@@ -62,39 +63,44 @@ class _DesktopHomePageState extends State<DesktopHomePage> {
       appBar: AppBar(
         title: Text('Apyar Doc'),
         actions: [
-          IconButton(onPressed: init, icon: Icon(Icons.refresh_outlined)),
+          if (TPlatform.isDesktop)
+            IconButton(onPressed: init, icon: Icon(Icons.refresh_outlined)),
         ],
       ),
-      body: CustomScrollView(
-        slivers: [
-          if (isLoading)
-            SliverFillRemaining(
-              child: Center(child: CircularProgressIndicator.adaptive()),
-            ),
-          if (list.isNotEmpty)
-            SliverToBoxAdapter(
-              child: Padding(
+      body: RefreshIndicator.adaptive(
+        onRefresh: init,
+        child: CustomScrollView(
+          physics: AlwaysScrollableScrollPhysics(),
+          slivers: [
+            if (isLoading)
+              SliverFillRemaining(
+                child: Center(child: CircularProgressIndicator.adaptive()),
+              ),
+            if (list.isNotEmpty)
+              SliverToBoxAdapter(
+                child: Padding(
+                  padding: .symmetric(vertical: 5, horizontal: 10),
+                  child: _header(),
+                ),
+              ),
+            if (list.isEmpty)
+              SliverFillRemaining(
+                child: RefreshButton(text: Text('List Empty'), onClicked: init),
+              )
+            else
+              SliverPadding(
                 padding: .symmetric(vertical: 5, horizontal: 10),
-                child: _header(),
+                sliver: SliverList.separated(
+                  separatorBuilder: (context, index) => SizedBox(height: 5),
+                  itemCount: list.length,
+                  itemBuilder: (context, index) {
+                    final item = list[index];
+                    return _listItem(item);
+                  },
+                ),
               ),
-            ),
-          if (list.isEmpty)
-            SliverFillRemaining(
-              child: RefreshButton(text: Text('List Empty'), onClicked: init),
-            )
-          else
-            SliverPadding(
-              padding: .symmetric(vertical: 5, horizontal: 10),
-              sliver: SliverList.separated(
-                separatorBuilder: (context, index) => SizedBox(height: 5),
-                itemCount: list.length,
-                itemBuilder: (context, index) {
-                  final item = list[index];
-                  return _listItem(item);
-                },
-              ),
-            ),
-        ],
+          ],
+        ),
       ),
     );
   }

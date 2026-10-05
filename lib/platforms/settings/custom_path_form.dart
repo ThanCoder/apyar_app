@@ -6,6 +6,7 @@ import 'package:apyar_app/core/utils/app_util.dart';
 import 'package:apyar_app/keys.dart';
 import 'package:apyar_app/platforms/components/dialog/snack_alert.dart';
 import 'package:apyar_app/platforms/components/forms/input_text.dart';
+import 'package:dart_core_extensions/dart_core_extensions.dart';
 import 'package:flutter/material.dart';
 import 'package:than_pkg_android/than_pkg_android.dart';
 
@@ -25,17 +26,31 @@ class _CustomPathFormState extends State<CustomPathForm> {
         .where((e) => e.key == appDatabseCustomPathEnableKey)
         .listen((event) {
           if (!mounted) return;
-          controller.text = cf.getString(appDatabseCustomPathKey);
-          setState(() {});
+          setCfPath();
         });
-    controller.text = cf.getString(appDatabseCustomPathKey);
-    setState(() {});
+    setCfPath();
   }
 
   @override
   void dispose() {
     _sub?.cancel();
     super.dispose();
+  }
+
+  void setCfPath() {
+    String defPath = '';
+    if (Platform.isLinux) {
+      defPath = Platform.environment['HOME']!
+          .join('Downloads')
+          .join('apyar.store');
+    }
+    if (Platform.isAndroid) {
+      defPath = ThanPkgAndroid.getInstance.pathHandler.getDownloadPath().join(
+        'apyar.store',
+      );
+    }
+    controller.text = cf.getString(appDatabseCustomPathKey).emptyOr(defPath);
+    setState(() {});
   }
 
   final cf = AppUtil.instance.config;
@@ -64,7 +79,9 @@ class _CustomPathFormState extends State<CustomPathForm> {
     final p = controller.text.trim();
     await cf.putAndWriteAll(appDatabseCustomPathKey, p);
     await DuDB.instance.changePath(p);
+    isChanged = false;
     if (!mounted) return;
+    setState(() {});
     showSnackbar(context, 'Saved');
   }
 
