@@ -32,7 +32,7 @@ class ApyarController extends IController {
     isLoading = true;
     addEvent(ApLoad());
 
-    await Future.delayed(Duration(seconds: 2));
+    // await Future.delayed(Duration(seconds: 2));
 
     list = await db.apyarBox.getAll();
     for (var ap in list) {
