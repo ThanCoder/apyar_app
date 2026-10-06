@@ -1,5 +1,8 @@
 import 'package:apyar_app/core/db/du_db.dart';
 import 'package:apyar_app/core/models/apyar.dart';
+import 'package:apyar_app/core/utils/app_util.dart';
+import 'package:apyar_app/keys.dart';
+import 'package:apyar_app/platforms/components/menu/reader_config_menu.dart';
 import 'package:flutter/material.dart';
 
 class DesktopReaderPage extends StatefulWidget {
@@ -17,6 +20,7 @@ class _DesktopReaderPageState extends State<DesktopReaderPage> {
     init();
   }
 
+  final cf = AppUtil.instance.config;
   List<String> textList = [];
 
   void init() async {
@@ -36,25 +40,59 @@ class _DesktopReaderPageState extends State<DesktopReaderPage> {
     setState(() {});
   }
 
+  void showMenu() {
+    showModalBottomSheet(
+      context: context,
+      showDragHandle: true,
+      isScrollControlled: true,
+      builder: (context) => ReaderConfigMenu(),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text(widget.apyar.title)),
-      body: CustomScrollView(
-        slivers: [
-          SliverPadding(
-            padding: .symmetric(vertical: 10, horizontal: 14),
-            sliver: SliverList.builder(
-              itemCount: textList.length,
-              itemBuilder: (context, index) => _item(textList[index]),
-            ),
-          ),
-        ],
+      // appBar: _appbar(),
+      body: StreamBuilder(
+        stream: cf.stream.put.where((e) => e.key == textReaderFontSizekey),
+        builder: (context, asyncSnapshot) {
+          return CustomScrollView(
+            slivers: [
+              SliverAppBar(
+                snap: true,
+                floating: true,
+                pinned: false,
+                title: Text(widget.apyar.title),
+                actions: [
+                  IconButton(
+                    onPressed: showMenu,
+                    icon: Icon(Icons.more_vert_outlined),
+                  ),
+                ],
+              ),
+              SliverPadding(
+                padding: .symmetric(vertical: 10, horizontal: 14),
+                sliver: SliverList.builder(
+                  itemCount: textList.length,
+                  itemBuilder: (context, index) => _item(textList[index]),
+                ),
+              ),
+            ],
+          );
+        },
       ),
     );
   }
 
+  // AppBar _appbar() => AppBar(
+  //   title: Text(widget.apyar.title),
+  //   actions: [
+  //     IconButton(onPressed: showMenu, icon: Icon(Icons.more_vert_outlined)),
+  //   ],
+  // );
+
   Widget _item(String text) {
-    return Text(text, style: TextStyle(fontSize: 20));
+    final fontSize = cf.getDouble(textReaderFontSizekey, 18);
+    return Text(text, style: TextStyle(fontSize: fontSize));
   }
 }
